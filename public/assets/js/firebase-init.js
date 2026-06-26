@@ -18,5 +18,5 @@ var firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-var db = firebase.database();
 var auth = firebase.auth();
+var db = typeof firebase.database === "function" ? firebase.database() : null;
