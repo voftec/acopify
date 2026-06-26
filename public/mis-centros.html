@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mis Centros - Acopify</title>
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <span class="nav-logo-icon">📦</span>
+        Acopify
+      </a>
+      <div class="nav-actions" id="nav-actions">
+        <a href="/login" class="nav-link" id="nav-login">Iniciar sesion</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-content">
+    <div class="container-md">
+      <div class="my-centros-header">
+        <h1>Mis Centros de Acopio</h1>
+        <a href="/registro" class="btn btn-primary">+ Registrar centro</a>
+      </div>
+
+      <div id="auth-required" class="alert alert-info hidden">
+        Debes <a href="/login">iniciar sesion</a> para ver tus centros.
+      </div>
+
+      <div id="centros-container">
+        <div class="loading"><div class="spinner"></div> Cargando...</div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>&copy; 2026 Acopify &mdash; Codigo abierto (MIT)</p>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="/assets/js/firebase-init.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/mis-centros.js"></script>
+</body>
+</html>

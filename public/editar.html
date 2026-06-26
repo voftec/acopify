@@ -3,18 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Acopify - Centros de Acopio Venezuela</title>
-  <meta name="description" content="Plataforma para localizar y coordinar centros de acopio para ayuda humanitaria en Venezuela." />
-
-  <!-- Leaflet CSS -->
+  <title>Editar Centro - Acopify</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-  <!-- Custom Styles -->
   <link rel="stylesheet" href="/assets/css/styles.css" />
 </head>
 <body>
 
-  <!-- Navigation -->
   <nav class="nav">
     <div class="nav-inner">
       <a href="/" class="nav-logo">
@@ -27,37 +21,22 @@
     </div>
   </nav>
 
-  <!-- View toggle (mobile) -->
-  <div class="list-toggle" id="view-toggle">
-    <button class="list-toggle-btn active" data-view="map">Mapa</button>
-    <button class="list-toggle-btn" data-view="list">Lista</button>
-  </div>
-
-  <!-- Main content -->
   <div class="page-content">
-    <div class="homepage-layout">
-      <div class="map-container">
-        <div id="map"></div>
-      </div>
-      <div class="homepage-sidebar" id="sidebar">
-        <div class="centros-list" id="centros-list">
-          <div class="loading"><div class="spinner"></div> Cargando centros...</div>
-        </div>
-      </div>
+    <div class="container-md" id="editar-content">
+      <div class="loading"><div class="spinner"></div> Cargando...</div>
     </div>
   </div>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <footer class="footer">
+    <p>&copy; 2026 Acopify &mdash; Codigo abierto (MIT)</p>
+  </footer>
 
-  <!-- Firebase SDK -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-
-  <!-- App Scripts -->
   <script src="/assets/js/firebase-init.js"></script>
   <script src="/assets/js/auth.js"></script>
-  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/editar.js"></script>
 </body>
 </html>

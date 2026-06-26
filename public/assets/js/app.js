@@ -1,72 +1,180 @@
 /*
- * Acopify - Main application logic
+ * Acopify - Homepage: map + centro list with real-time updates
  */
 
-document.addEventListener("DOMContentLoaded", () => {
-  initApp();
-});
+(function () {
+  var map;
+  var markers = {};
+  var centrosData = {};
+  var listEl = document.getElementById("centros-list");
+  var sidebarEl = document.getElementById("sidebar");
+  var mapContainerEl = document.querySelector(".map-container");
 
-function initApp() {
-  renderWelcome();
+  // Venezuela center coordinates
+  var VZ_CENTER = [8.0, -66.0];
+  var VZ_ZOOM = 7;
 
-  if (window.lucide) {
-    lucide.createIcons();
+  initMap();
+  listenCentros();
+  setupViewToggle();
+
+  function initMap() {
+    map = L.map("map").setView(VZ_CENTER, VZ_ZOOM);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19
+    }).addTo(map);
   }
-}
 
-function renderWelcome() {
-  const main = document.getElementById("app");
-  if (!main) return;
+  function listenCentros() {
+    db.ref("centros").on("value", function (snapshot) {
+      var data = snapshot.val() || {};
+      centrosData = data;
+      renderMarkers(data);
+      renderList(data);
+    });
+  }
 
-  main.innerHTML = `
-    <section class="text-center py-20 px-4">
-      <h2 class="text-4xl font-bold text-gray-900 mb-4">
-        Welcome to Acopify
-      </h2>
-      <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
-        An open-source web application powered by Firebase.
-      </p>
-      <div class="flex justify-center gap-4">
-        <a href="https://github.com/voftec/Acopify"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="inline-flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors">
-          <i data-lucide="github"></i>
-          View on GitHub
-        </a>
-      </div>
-    </section>
+  function renderMarkers(centros) {
+    // Remove old markers
+    Object.keys(markers).forEach(function (id) {
+      if (!centros[id]) {
+        map.removeLayer(markers[id]);
+        delete markers[id];
+      }
+    });
 
-    <section class="max-w-4xl mx-auto px-4 py-12">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
-            <i data-lucide="database" class="w-5 h-5 text-orange-600"></i>
-          </div>
-          <h3 class="font-semibold text-gray-900 mb-2">Realtime Database</h3>
-          <p class="text-sm text-gray-600">
-            Powered by Firebase RTDB for real-time data synchronization.
-          </p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-            <i data-lucide="globe" class="w-5 h-5 text-blue-600"></i>
-          </div>
-          <h3 class="font-semibold text-gray-900 mb-2">Firebase Hosting</h3>
-          <p class="text-sm text-gray-600">
-            Fast, secure hosting with global CDN distribution.
-          </p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-            <i data-lucide="code" class="w-5 h-5 text-green-600"></i>
-          </div>
-          <h3 class="font-semibold text-gray-900 mb-2">Open Source</h3>
-          <p class="text-sm text-gray-600">
-            MIT licensed. Contribute and customize freely.
-          </p>
-        </div>
-      </div>
-    </section>
-  `;
-}
+    Object.keys(centros).forEach(function (id) {
+      var c = centros[id];
+      if (!c.coordenadas) return;
+
+      var lat = c.coordenadas.lat;
+      var lng = c.coordenadas.lng;
+
+      if (markers[id]) {
+        markers[id].setLatLng([lat, lng]);
+        markers[id].setPopupContent(buildPopup(id, c));
+      } else {
+        var marker = L.marker([lat, lng]).addTo(map);
+        marker.bindPopup(buildPopup(id, c));
+        markers[id] = marker;
+      }
+    });
+  }
+
+  function buildPopup(id, centro) {
+    var needs = centro.necesidades ? Object.values(centro.necesidades) : [];
+    var needsHtml = "";
+    if (needs.length > 0) {
+      needsHtml = '<div class="popup-needs">';
+      needs.slice(0, 5).forEach(function (n) {
+        needsHtml += '<span class="tag">' + escapeHtml(n.nombre) + '</span>';
+      });
+      if (needs.length > 5) {
+        needsHtml += '<span class="tag">+' + (needs.length - 5) + ' mas</span>';
+      }
+      needsHtml += '</div>';
+    }
+
+    return '<div class="popup-content">' +
+      '<h3>' + escapeHtml(centro.nombre) + '</h3>' +
+      '<p>' + escapeHtml(buildAddressString(centro.direccion)) + '</p>' +
+      needsHtml +
+      '<a href="/centro?id=' + id + '" class="popup-link">Ver detalles &rarr;</a>' +
+      '</div>';
+  }
+
+  function renderList(centros) {
+    var ids = Object.keys(centros);
+    if (ids.length === 0) {
+      listEl.innerHTML =
+        '<div class="empty-state">' +
+        '<div class="empty-state-icon">📦</div>' +
+        '<p>No hay centros de acopio registrados aun.</p>' +
+        '<a href="/registro" class="btn btn-primary">Registrar el primero</a>' +
+        '</div>';
+      return;
+    }
+
+    var html = "";
+    ids.forEach(function (id) {
+      var c = centros[id];
+      var needs = c.necesidades ? Object.values(c.necesidades) : [];
+      var needsHtml = "";
+      if (needs.length > 0) {
+        needsHtml = '<div class="centro-card-needs">';
+        needs.slice(0, 4).forEach(function (n) {
+          needsHtml += '<span class="tag">' + escapeHtml(n.nombre) + '</span>';
+        });
+        if (needs.length > 4) {
+          needsHtml += '<span class="tag">+' + (needs.length - 4) + '</span>';
+        }
+        needsHtml += '</div>';
+      }
+
+      html +=
+        '<div class="centro-card" data-id="' + id + '">' +
+        '<div class="centro-card-name">' + escapeHtml(c.nombre) + '</div>' +
+        '<div class="centro-card-address">' + escapeHtml(buildAddressString(c.direccion)) + '</div>' +
+        needsHtml +
+        '</div>';
+    });
+
+    listEl.innerHTML = html;
+
+    // Click handlers
+    listEl.querySelectorAll(".centro-card").forEach(function (card) {
+      card.addEventListener("click", function () {
+        var id = card.getAttribute("data-id");
+        window.location.href = "/centro?id=" + id;
+      });
+    });
+  }
+
+  function setupViewToggle() {
+    var toggle = document.getElementById("view-toggle");
+    if (!toggle) return;
+
+    toggle.addEventListener("click", function (e) {
+      if (!e.target.classList.contains("list-toggle-btn")) return;
+      var view = e.target.getAttribute("data-view");
+      toggle.querySelectorAll(".list-toggle-btn").forEach(function (btn) {
+        btn.classList.remove("active");
+      });
+      e.target.classList.add("active");
+
+      if (view === "map") {
+        mapContainerEl.style.display = "";
+        sidebarEl.style.display = "none";
+      } else {
+        mapContainerEl.style.display = "none";
+        sidebarEl.style.display = "";
+      }
+      if (view === "map") {
+        map.invalidateSize();
+      }
+    });
+
+    // On mobile, default to map view, hide sidebar
+    if (window.innerWidth < 768) {
+      sidebarEl.style.display = "none";
+    }
+  }
+
+  function buildAddressString(dir) {
+    if (!dir) return "";
+    var parts = [];
+    if (dir.calle) parts.push(dir.calle);
+    if (dir.piso) parts.push(dir.piso);
+    if (dir.ciudad) parts.push(dir.ciudad);
+    if (dir.estado) parts.push(dir.estado);
+    return parts.join(", ");
+  }
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    var div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+})();

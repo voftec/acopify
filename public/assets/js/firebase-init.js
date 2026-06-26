@@ -6,7 +6,7 @@
  *   Project Settings > General > Your apps > Firebase SDK snippet
  */
 
-const firebaseConfig = {
+var firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "acopify.firebaseapp.com",
   databaseURL: "https://acopify-default-rtdb.firebaseio.com",
@@ -18,4 +18,5 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-const db = firebase.database();
+var db = firebase.database();
+var auth = firebase.auth();

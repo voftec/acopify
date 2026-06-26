@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Centro de Acopio - Acopify</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <span class="nav-logo-icon">📦</span>
+        Acopify
+      </a>
+      <div class="nav-actions" id="nav-actions">
+        <a href="/login" class="nav-link" id="nav-login">Iniciar sesion</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-content">
+    <div class="container-md" id="centro-content">
+      <div class="loading"><div class="spinner"></div> Cargando...</div>
+    </div>
+  </div>
+
+  <!-- Report modal -->
+  <div class="modal-overlay hidden" id="modal-reportar">
+    <div class="modal">
+      <h2>Reportar centro</h2>
+      <p style="color: var(--color-text-secondary); font-size: 0.875rem; margin-bottom: 16px;">
+        Si este centro tiene informacion incorrecta o sospechosa, envianos un reporte.
+      </p>
+      <div class="form-group">
+        <label class="form-label" for="motivo-reporte">Motivo del reporte</label>
+        <textarea class="form-textarea" id="motivo-reporte" rows="3" placeholder="Describe el problema..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="btn-cancel-report">Cancelar</button>
+        <button class="btn btn-danger" id="btn-send-report">Enviar reporte</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>&copy; 2026 Acopify &mdash; Codigo abierto (MIT)</p>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="/assets/js/firebase-init.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/centro.js"></script>
+</body>
+</html>

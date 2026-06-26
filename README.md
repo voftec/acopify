@@ -1,71 +1,101 @@
 # Acopify
 
-Open-source web application built with Firebase Hosting and Firebase Realtime Database.
+Plataforma de codigo abierto para localizar y coordinar centros de acopio para ayuda humanitaria en Venezuela.
+
+## Que es Acopify?
+
+Acopify centraliza la informacion de centros de acopio para que:
+- **Donantes** encuentren rapidamente donde enviar recursos.
+- **Organizadores** registren y gestionen sus centros, publicando que necesitan en tiempo real.
+
+## Funcionalidades
+
+- Mapa interactivo con todos los centros de acopio (Leaflet + OpenStreetMap)
+- Registro de centros con direccion detallada y pin arrastrable en el mapa
+- Lista de necesidades en tiempo real (Firebase Realtime Database)
+- Autenticacion con email/contrasena o Google
+- Panel de gestion para organizadores (editar, eliminar centros)
+- Boton de reporte para contenido sospechoso
+- Responsive: mobile-first con soporte desktop
 
 ## Tech Stack
 
 - **Hosting:** Firebase Hosting
-- **Database:** Firebase Realtime Database
-- **Frontend:** HTML, CSS (Tailwind CSS via CDN), vanilla JavaScript
-- **Icons:** Lucide Icons
+- **Base de datos:** Firebase Realtime Database
+- **Autenticacion:** Firebase Auth (email + Google)
+- **Mapa:** Leaflet + OpenStreetMap (gratis, sin API key)
+- **Frontend:** HTML, CSS, vanilla JavaScript
+- Sin dependencias de build (sin npm, sin bundler)
 
-## Project Structure
+## Estructura del proyecto
 
 ```
-Acopify/
-├── public/                  # Firebase Hosting root
-│   ├── index.html           # Main entry point
-│   ├── assets/
-│   │   ├── css/
-│   │   │   └── styles.css   # Custom styles
-│   │   ├── js/
-│   │   │   ├── app.js       # Main application logic
-│   │   │   └── firebase-init.js  # Firebase initialization
-│   │   └── img/             # Static images
-│   └── 404.html             # Custom 404 page
-├── firebase.json            # Firebase project configuration
-├── .firebaserc              # Firebase project aliases
-├── rtdb.rules.json          # Realtime Database security rules
-└── .gitignore
+acopify/
+├── public/
+│   ├── index.html              # Pagina principal (mapa + lista)
+│   ├── login.html              # Inicio de sesion / registro
+│   ├── registro.html           # Registrar centro de acopio
+│   ├── centro.html             # Detalle de un centro
+│   ├── mis-centros.html        # Dashboard del organizador
+│   ├── editar.html             # Editar centro de acopio
+│   ├── 404.html                # Pagina de error
+│   └── assets/
+│       ├── css/styles.css      # Estilos (CSS puro, mobile-first)
+│       └── js/
+│           ├── firebase-init.js  # Configuracion Firebase
+│           ├── auth.js           # Estado de autenticacion
+│           ├── login.js          # Logica de login
+│           ├── app.js            # Homepage: mapa + lista
+│           ├── registro.js       # Formulario de registro
+│           ├── centro.js         # Detalle + reportes
+│           ├── mis-centros.js    # Dashboard
+│           └── editar.js         # Editar centro + necesidades
+├── firebase.json               # Configuracion Firebase Hosting
+├── .firebaserc                 # Alias del proyecto
+├── rtdb.rules.json             # Reglas de seguridad RTDB
+└── LICENSE                     # MIT
 ```
 
-## Getting Started
+## Inicio rapido
 
-### Prerequisites
+### Requisitos
 
-- [Node.js](https://nodejs.org/) (v18+)
 - [Firebase CLI](https://firebase.google.com/docs/cli) (`npm install -g firebase-tools`)
 
-### Setup
+### Configuracion
 
-1. Clone the repository:
+1. Clona el repositorio:
    ```bash
-   git clone https://github.com/voftec/Acopify.git
-   cd Acopify
+   git clone https://github.com/voftec/acopify.git
+   cd acopify
    ```
 
-2. Log in to Firebase:
+2. Configura Firebase: edita `public/assets/js/firebase-init.js` con las credenciales de tu proyecto Firebase (Firebase Console > Project Settings > Your apps).
+
+3. Habilita los proveedores de autenticacion en Firebase Console:
+   - Email/Password
+   - Google
+
+4. Inicia el servidor local:
    ```bash
    firebase login
-   ```
-
-3. Start the local development server:
-   ```bash
    firebase serve
    ```
 
-4. Open `http://localhost:5000` in your browser.
+5. Abre `http://localhost:5000` en tu navegador.
 
-### Deployment
+### Despliegue
 
 ```bash
 firebase deploy
 ```
 
-## Firebase Configuration
+## Reglas de seguridad RTDB
 
-Before deploying, update `public/assets/js/firebase-init.js` with your Firebase project credentials. You can find these in the [Firebase Console](https://console.firebase.google.com/) under Project Settings.
+- **Centros:** lectura publica; escritura solo para usuarios autenticados (creador del centro).
+- **Necesidades:** solo el organizador del centro puede agregar/eliminar.
+- **Reportes:** escritura publica; lectura restringida.
 
-## License
+## Licencia
 
 MIT

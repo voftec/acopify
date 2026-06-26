@@ -1,6 +1,22 @@
 {
   "rules": {
-    ".read": false,
-    ".write": false
+    "centros": {
+      ".read": true,
+      "$centroId": {
+        ".write": "auth != null && (!data.exists() || data.child('organizadorId').val() === auth.uid)",
+        "necesidades": {
+          "$needId": {
+            ".write": "auth != null && root.child('centros').child($centroId).child('organizadorId').val() === auth.uid"
+          }
+        },
+        "reportes": {
+          ".write": true
+        }
+      }
+    },
+    "reportes": {
+      ".read": false,
+      ".write": true
+    }
   }
 }

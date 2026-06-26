@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registrar Centro de Acopio - Acopify</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <span class="nav-logo-icon">📦</span>
+        Acopify
+      </a>
+      <div class="nav-actions" id="nav-actions">
+        <a href="/login" class="nav-link" id="nav-login">Iniciar sesion</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-content">
+    <div class="container-md">
+      <h1 style="margin: 24px 0 8px;">Registrar Centro de Acopio</h1>
+      <p class="mb-16" style="color: var(--color-text-secondary);">Completa la informacion para registrar tu centro. Arrastra el marcador en el mapa para ubicar la posicion exacta.</p>
+
+      <div id="auth-required" class="alert alert-info hidden">
+        Debes <a href="/login">iniciar sesion</a> para registrar un centro de acopio.
+      </div>
+
+      <div id="form-error" class="alert alert-error hidden"></div>
+
+      <form id="form-registro" class="hidden">
+        <div class="form-group">
+          <label class="form-label" for="nombre">Nombre del centro *</label>
+          <input class="form-input" type="text" id="nombre" required placeholder="Ej: Centro de Acopio San Martin" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="descripcion">Descripcion</label>
+          <textarea class="form-textarea" id="descripcion" placeholder="Describe brevemente el centro y su proposito..." rows="3"></textarea>
+        </div>
+
+        <h3 class="mb-8" style="margin-top: 24px;">Direccion</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="calle">Calle / Avenida *</label>
+            <input class="form-input" type="text" id="calle" required placeholder="Ej: Av. Libertador 1234" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ciudad">Ciudad *</label>
+            <input class="form-input" type="text" id="ciudad" required placeholder="Ej: Caracas" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="estado">Estado *</label>
+            <input class="form-input" type="text" id="estado" required placeholder="Ej: Distrito Capital" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="piso">Piso / Apartamento</label>
+            <input class="form-input" type="text" id="piso" placeholder="Ej: Piso 2, Apto 4B" />
+          </div>
+        </div>
+
+        <h3 class="mb-8" style="margin-top: 24px;">Ubicacion en el mapa *</h3>
+        <p class="form-hint mb-8">Arrastra el marcador para indicar la ubicacion exacta del centro.</p>
+        <div class="map-form-container">
+          <div id="map-registro"></div>
+        </div>
+        <p class="form-hint" id="coords-display">Lat: --, Lng: --</p>
+
+        <h3 class="mb-8" style="margin-top: 24px;">Contacto</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="telefono">Telefono</label>
+            <input class="form-input" type="tel" id="telefono" placeholder="Ej: +58 412 1234567" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="whatsapp">WhatsApp</label>
+            <input class="form-input" type="tel" id="whatsapp" placeholder="Ej: +58 412 1234567" />
+          </div>
+        </div>
+
+        <h3 class="mb-8" style="margin-top: 24px;">Necesidades iniciales</h3>
+        <p class="form-hint mb-8">Agrega los recursos que tu centro necesita actualmente.</p>
+
+        <div class="needs-list" id="needs-list"></div>
+        <div class="add-need-row">
+          <input class="form-input" type="text" id="need-input" placeholder="Ej: Agua, Comida, Medicinas..." />
+          <button type="button" class="btn btn-secondary" id="btn-add-need">Agregar</button>
+        </div>
+
+        <div style="margin-top: 32px; padding-bottom: 32px;">
+          <button class="btn btn-primary btn-block" type="submit" id="btn-submit">Registrar Centro</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>&copy; 2026 Acopify &mdash; Codigo abierto (MIT)</p>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="/assets/js/firebase-init.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/registro.js"></script>
+</body>
+</html>
