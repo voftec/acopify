@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acopify</title>
+  <meta name="description" content="Acopify - An open-source web application powered by Firebase." />
+
+  <!-- Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+  <!-- Navigation -->
+  <nav class="sticky top-0 z-50 bg-white/80 border-b border-gray-200">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/" class="text-xl font-bold tracking-tight">Acopify</a>
+      <div class="flex items-center gap-4">
+        <a href="https://github.com/voftec/Acopify"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="text-gray-600 hover:text-gray-900 transition-colors"
+           aria-label="GitHub">
+          <i data-lucide="github" class="w-5 h-5"></i>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- App Root -->
+  <main id="app"></main>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-200 bg-white">
+    <div class="max-w-6xl mx-auto px-4 py-6 text-center text-sm text-gray-500">
+      <p>&copy; 2026 Acopify &mdash; Open Source (MIT)</p>
+    </div>
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <!-- App Scripts -->
+  <script src="/assets/js/firebase-init.js"></script>
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>

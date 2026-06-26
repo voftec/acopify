@@ -1,0 +1,21 @@
+/*
+ * Acopify - Custom styles
+ * Base styling is handled by Tailwind CSS (CDN).
+ * Add project-specific overrides here.
+ */
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f9fafb;
+}
+
+#app {
+  flex: 1;
+}
+
+nav {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
