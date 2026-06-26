@@ -8,6 +8,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function initApp() {
   renderWelcome();
+
+  if (window.lucide) {
+    lucide.createIcons();
+  }
 }
 
 function renderWelcome() {
@@ -65,8 +69,4 @@ function renderWelcome() {
       </div>
     </section>
   `;
-
-  if (window.lucide) {
-    lucide.createIcons();
-  }
 }
