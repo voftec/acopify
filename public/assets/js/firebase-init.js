@@ -7,13 +7,13 @@
  */
 
 var firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "acopify.firebaseapp.com",
-  databaseURL: "https://acopify-default-rtdb.firebaseio.com",
-  projectId: "acopify",
-  storageBucket: "acopify.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyALQQ3QjOuhsLJqJnco8DkdxB-wcK39BHo",
+  authDomain: "acopify-venezuela.firebaseapp.com",
+  databaseURL: "https://acopify-venezuela-default-rtdb.firebaseio.com",
+  projectId: "acopify-venezuela",
+  storageBucket: "acopify-venezuela.firebasestorage.app",
+  messagingSenderId: "237534329876",
+  appId: "1:237534329876:web:d75bf61f8d87ebfc0cbb01"
 };
 
 firebase.initializeApp(firebaseConfig);
