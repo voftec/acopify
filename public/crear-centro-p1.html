@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html class="light" lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Acopify - Crear Centro de Acopio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "surface-container": "#e6eeff",
+          "primary-fixed-dim": "#b4c5ff",
+          "surface-bright": "#f8f9ff",
+          "on-tertiary-fixed-variant": "#93000b",
+          "on-primary": "#ffffff",
+          "secondary-fixed": "#ffdbca",
+          "on-secondary": "#ffffff",
+          "on-tertiary": "#ffffff",
+          "surface-container-high": "#dce9ff",
+          "primary-container": "#2563eb",
+          "inverse-surface": "#233144",
+          "inverse-on-surface": "#eaf1ff",
+          "secondary": "#9d4300",
+          "on-primary-container": "#eeefff",
+          "error": "#ba1a1a",
+          "secondary-fixed-dim": "#ffb690",
+          "inverse-primary": "#b4c5ff",
+          "tertiary-fixed": "#ffdad6",
+          "surface": "#f8f9ff",
+          "on-secondary-fixed-variant": "#783200",
+          "error-container": "#ffdad6",
+          "surface-tint": "#0053db",
+          "on-background": "#0d1c2e",
+          "primary-fixed": "#dbe1ff",
+          "surface-dim": "#ccdbf3",
+          "surface-variant": "#d5e3fc",
+          "on-surface": "#0d1c2e",
+          "tertiary": "#ae0010",
+          "on-surface-variant": "#434655",
+          "on-error": "#ffffff",
+          "tertiary-fixed-dim": "#ffb4ab",
+          "tertiary-container": "#d52022",
+          "surface-container-lowest": "#ffffff",
+          "outline-variant": "#c3c6d7",
+          "surface-container-highest": "#d5e3fc",
+          "outline": "#737686",
+          "on-secondary-fixed": "#341100",
+          "surface-container-low": "#eff4ff",
+          "background": "#f8f9ff",
+          "primary": "#004ac6",
+          "on-tertiary-fixed": "#410002",
+          "secondary-container": "#fd761a",
+          "on-error-container": "#93000a",
+          "on-primary-fixed": "#00174b",
+          "on-primary-fixed-variant": "#003ea8",
+          "on-tertiary-container": "#ffecea",
+          "on-secondary-container": "#5c2400"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "spacing": {
+          "unit": "4px",
+          "lg": "24px",
+          "md": "16px",
+          "gutter": "16px",
+          "xl": "32px",
+          "xs": "4px",
+          "container-margin-mobile": "16px",
+          "sm": "8px",
+          "container-margin-desktop": "40px"
+        },
+        "fontFamily": {
+          "display-lg": ["Inter"],
+          "status-sm": ["Inter"],
+          "headline-md": ["Inter"],
+          "headline-lg": ["Inter"],
+          "body-md": ["Inter"],
+          "body-lg": ["Inter"],
+          "label-md": ["Inter"],
+          "headline-lg-mobile": ["Inter"]
+        },
+        "fontSize": {
+          "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+          "status-sm": ["12px", {"lineHeight": "16px", "fontWeight": "700"}],
+          "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+          "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+          "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+          "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+          "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+          "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}]
+        }
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  body {
+    min-height: max(884px, 100dvh);
+  }
+</style>
+</head>
+<body class="bg-background font-body-md text-on-surface overflow-x-hidden">
+
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 bg-surface shadow-sm border-b border-outline-variant flex justify-between items-center px-md h-16">
+  <div class="flex items-center gap-sm">
+    <span class="material-symbols-outlined text-primary" data-icon="emergency">emergency</span>
+    <h1 class="text-headline-lg-mobile font-headline-lg-mobile font-bold text-primary">Acopify</h1>
+  </div>
+  <button class="text-label-md font-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors px-4 py-2 rounded-full" id="btn-cancelar">
+    Cancelar
+  </button>
+</header>
+
+<!-- Main Content -->
+<main class="relative w-full pt-20 pb-24 bg-surface min-h-screen px-md md:px-xl">
+  <div class="max-w-xl mx-auto">
+    
+    <!-- Progress Steps -->
+    <div class="flex items-center gap-sm mb-lg">
+      <div class="flex items-center gap-xs">
+        <div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm">1</div>
+        <span class="text-label-md font-label-md text-primary font-semibold">Información</span>
+      </div>
+      <div class="flex-1 h-0.5 bg-outline-variant"></div>
+      <div class="flex items-center gap-xs opacity-50">
+        <div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-bold text-sm">2</div>
+        <span class="text-label-md font-label-md text-on-surface-variant">Ubicación</span>
+      </div>
+    </div>
+
+    <!-- Auth Required Message -->
+    <div id="auth-required" class="hidden bg-error-container text-on-error-container p-4 rounded-xl mb-lg border border-error">
+      <div class="flex items-start gap-sm">
+        <span class="material-symbols-outlined text-error" data-icon="lock">lock</span>
+        <div>
+          <p class="font-semibold mb-1">Autenticación requerida</p>
+          <p class="text-sm">Debes <a href="/login.html" class="underline font-semibold">iniciar sesión</a> para crear un centro de acopio.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form id="form-crear-centro" class="hidden space-y-lg">
+      
+      <!-- Basic Info -->
+      <div class="space-y-md">
+        <h2 class="text-headline-md font-headline-md font-semibold text-on-surface">Información del Centro</h2>
+        
+        <div class="space-y-sm">
+          <label class="text-label-md font-label-md text-on-surface block">Nombre del centro *</label>
+          <input type="text" id="nombre" required 
+            class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all"
+            placeholder="Ej: Centro de Acopio San Martin">
+        </div>
+
+        <div class="space-y-sm">
+          <label class="text-label-md font-label-md text-on-surface block">Descripción</label>
+          <textarea id="descripcion" rows="3"
+            class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all resize-none"
+            placeholder="Describe brevemente el centro y su propósito..."></textarea>
+        </div>
+      </div>
+
+      <!-- Address -->
+      <div class="space-y-md">
+        <h2 class="text-headline-md font-headline-md font-semibold text-on-surface">Dirección</h2>
+        
+        <div class="space-y-sm">
+          <label class="text-label-md font-label-md text-on-surface block">Calle / Avenida *</label>
+          <input type="text" id="calle" required 
+            class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all"
+            placeholder="Ej: Av. Libertador 1234">
+        </div>
+
+        <div class="grid grid-cols-2 gap-sm">
+          <div class="space-y-sm">
+            <label class="text-label-md font-label-md text-on-surface block">Ciudad *</label>
+            <input type="text" id="ciudad" required 
+              class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all"
+              placeholder="Ej: Caracas">
+          </div>
+          <div class="space-y-sm">
+            <label class="text-label-md font-label-md text-on-surface block">Estado *</label>
+            <input type="text" id="estado" required 
+              class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all"
+              placeholder="Ej: Distrito Capital">
+          </div>
+        </div>
+
+        <div class="space-y-sm">
+          <label class="text-label-md font-label-md text-on-surface block">Piso / Apartamento</label>
+          <input type="text" id="piso" 
+            class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all"
+            placeholder="Ej: Piso 2, Apto 4B">
+        </div>
+      </div>
+
+      <!-- Contact -->
+      <div class="space-y-md">
+        <h2 class="text-headline-md font-headline-md font-semibold text-on-surface">Contacto</h2>
+        
+        <div class="grid grid-cols-2 gap-sm">
+          <div class="space-y-sm">
+            <label class="text-label-md font-label-md text-on-surface block">Teléfono</label>
+            <input type="tel" id="telefono" 
+              class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all"
+              placeholder="+58 412 1234567">
+          </div>
+          <div class="space-y-sm">
+            <label class="text-label-md font-label-md text-on-surface block">WhatsApp</label>
+            <input type="tel" id="whatsapp" 
+              class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all"
+              placeholder="+58 412 1234567">
+          </div>
+        </div>
+      </div>
+
+      <!-- Días y Horarios -->
+      <div class="space-y-md">
+        <h2 class="text-headline-md font-headline-md font-semibold text-on-surface">Días y Horarios Abiertos</h2>
+        <p class="text-body-md text-on-surface-variant text-sm">Marca los días en que el centro está abierto e indica el horario de atención.</p>
+
+        <div id="horarios-list" class="space-y-sm"></div>
+      </div>
+
+      <!-- Initial Needs -->
+      <div class="space-y-md">
+        <h2 class="text-headline-md font-headline-md font-semibold text-on-surface">Necesidades Iniciales</h2>
+        <p class="text-body-md text-on-surface-variant text-sm">Agrega los recursos que tu centro necesita actualmente.</p>
+        
+        <div id="needs-list" class="flex flex-wrap gap-xs"></div>
+        
+        <div class="flex gap-sm">
+          <input type="text" id="need-input" 
+            class="flex-1 px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all"
+            placeholder="Ej: Agua, Comida, Medicinas...">
+          <button type="button" id="btn-add-need" 
+            class="px-4 py-3 bg-secondary-container text-on-secondary-container rounded-xl font-semibold hover:brightness-110 transition-all active:scale-95">
+            Agregar
+          </button>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div id="form-error" class="hidden bg-error-container text-on-error-container p-4 rounded-xl border border-error">
+        <div class="flex items-start gap-sm">
+          <span class="material-symbols-outlined text-error" data-icon="error">error</span>
+          <p id="error-text"></p>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</main>
+
+<!-- Bottom Persistent Panel -->
+<footer class="fixed bottom-0 left-0 w-full bg-surface-bright shadow-[0_-8px_24px_rgba(0,0,0,0.1)] border-t border-outline-variant z-50 p-lg md:px-xl">
+  <div class="max-w-xl mx-auto">
+    <button id="btn-continuar" class="w-full bg-primary-container text-on-primary-container py-4 rounded-full font-bold text-headline-md shadow-lg hover:brightness-110 transition-all active:scale-[0.98] duration-150 flex justify-center items-center gap-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+      CONTINUAR A UBICACIÓN
+      <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+    </button>
+    <div class="h-xs sm:hidden"></div>
+  </div>
+</footer>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<!-- App Scripts -->
+<script src="/assets/js/firebase-init.js"></script>
+<script src="/assets/js/crear-centro-p1.js"></script>
+</body>
+</html>

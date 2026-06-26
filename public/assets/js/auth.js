@@ -16,8 +16,8 @@ function updateNavAuth(user) {
   if (user) {
     var displayName = user.displayName || user.email.split("@")[0];
     navActions.innerHTML =
-      '<a href="/mis-centros" class="nav-link">Mis centros</a>' +
-      '<a href="/registro" class="nav-link">+ Registrar</a>' +
+      '<a href="/mis-centros.html" class="nav-link">Mis centros</a>' +
+      '<a href="/crear-centro-p1.html" class="nav-link">+ Registrar</a>' +
       '<span class="nav-user">' + escapeHtml(displayName) + '</span>' +
       '<a href="#" class="nav-link" id="btn-logout">Salir</a>';
     var logoutBtn = document.getElementById("btn-logout");
@@ -30,7 +30,7 @@ function updateNavAuth(user) {
       });
     }
   } else {
-    navActions.innerHTML = '<a href="/login" class="nav-link" id="nav-login">Iniciar sesion</a>';
+    navActions.innerHTML = '<a href="/login.html" class="nav-link" id="nav-login">Iniciar sesion</a>';
   }
 }
 

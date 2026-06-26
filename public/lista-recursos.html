@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html class="light" lang="es-VE">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>Acopify - Lista de Recursos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-tertiary-container": "#ffecea",
+          "surface-dim": "#ccdbf3",
+          "surface-container-low": "#eff4ff",
+          "secondary-container": "#fd761a",
+          "primary": "#004ac6",
+          "inverse-surface": "#233144",
+          "inverse-primary": "#b4c5ff",
+          "background": "#f8f9ff",
+          "on-tertiary": "#ffffff",
+          "primary-container": "#2563eb",
+          "on-secondary-container": "#5c2400",
+          "surface-container-highest": "#d5e3fc",
+          "on-surface-variant": "#434655",
+          "surface-container-lowest": "#ffffff",
+          "on-secondary-fixed": "#341100",
+          "surface-container": "#e6eeff",
+          "on-secondary": "#ffffff",
+          "on-primary-fixed": "#00174b",
+          "on-primary": "#ffffff",
+          "on-tertiary-fixed": "#410002",
+          "on-primary-fixed-variant": "#003ea8",
+          "on-primary-container": "#eeefff",
+          "on-error-container": "#93000a",
+          "secondary-fixed-dim": "#ffb690",
+          "on-background": "#0d1c2e",
+          "primary-fixed-dim": "#b4c5ff",
+          "secondary-fixed": "#ffdbca",
+          "outline": "#737686",
+          "primary-fixed": "#dbe1ff",
+          "tertiary-fixed-dim": "#ffb4ab",
+          "tertiary": "#ae0010",
+          "surface": "#f8f9ff",
+          "outline-variant": "#c3c6d7",
+          "on-tertiary-fixed-variant": "#93000b",
+          "error": "#ba1a1a",
+          "surface-variant": "#d5e3fc",
+          "inverse-on-surface": "#eaf1ff",
+          "secondary": "#9d4300",
+          "tertiary-container": "#d52022",
+          "surface-container-high": "#dce9ff",
+          "on-secondary-fixed-variant": "#783200",
+          "on-error": "#ffffff",
+          "on-surface": "#0d1c2e",
+          "surface-tint": "#0053db",
+          "surface-bright": "#f8f9ff",
+          "error-container": "#ffdad6",
+          "tertiary-fixed": "#ffdad6"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "spacing": {
+          "container-margin-mobile": "16px",
+          "lg": "24px",
+          "sm": "8px",
+          "xl": "32px",
+          "unit": "4px",
+          "container-margin-desktop": "40px",
+          "xs": "4px",
+          "md": "16px",
+          "gutter": "16px"
+        },
+        "fontFamily": {
+          "headline-lg-mobile": ["Inter"],
+          "body-md": ["Inter"],
+          "status-sm": ["Inter"],
+          "body-lg": ["Inter"],
+          "label-md": ["Inter"],
+          "headline-md": ["Inter"],
+          "headline-lg": ["Inter"],
+          "display-lg": ["Inter"]
+        },
+        "fontSize": {
+          "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+          "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+          "status-sm": ["12px", {"lineHeight": "16px", "fontWeight": "700"}],
+          "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+          "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+          "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+          "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+          "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+</style>
+</head>
+<body class="bg-background text-on-background selection:bg-primary-container selection:text-on-primary-container min-h-screen">
+
+<!-- TopAppBar -->
+<header class="bg-surface w-full top-0 sticky z-50 border-b border-outline-variant flex justify-between items-center px-container-margin-mobile md:px-container-margin-desktop h-16">
+  <div class="flex items-center gap-4">
+    <a href="/mis-centros.html" class="hover:bg-surface-container transition-colors p-2 rounded-full flex items-center justify-center active:opacity-80">
+      <span class="material-symbols-outlined text-primary" data-icon="arrow_back">arrow_back</span>
+    </a>
+    <h1 class="font-headline-md text-headline-md text-primary font-bold">Lista de Recursos</h1>
+  </div>
+  <div class="flex items-center gap-2">
+    <a href="/ajustes.html" class="hover:bg-surface-container transition-colors p-2 rounded-full flex items-center justify-center active:opacity-80">
+      <span class="material-symbols-outlined text-on-surface-variant" data-icon="account_circle">account_circle</span>
+    </a>
+  </div>
+</header>
+
+<main class="max-w-4xl mx-auto px-container-margin-mobile md:px-container-margin-desktop py-md md:py-lg space-y-md md:space-y-lg mb-24">
+
+  <!-- Auth Required Message -->
+  <div id="auth-required" class="hidden">
+    <div class="bg-error-container text-on-error-container p-4 rounded-xl border border-error mt-lg">
+      <div class="flex items-start gap-sm">
+        <span class="material-symbols-outlined text-error" data-icon="lock">lock</span>
+        <div>
+          <p class="font-semibold mb-1">Autenticación requerida</p>
+          <p class="text-sm">Debes <a href="/login.html" class="underline font-semibold">iniciar sesión</a> para gestionar la lista de recursos.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div id="loading-state" class="flex flex-col items-center justify-center py-xl">
+    <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary-container border-t-transparent mb-4"></div>
+    <p class="text-body-md text-on-surface-variant">Cargando lista de recursos...</p>
+  </div>
+
+  <!-- Content -->
+  <div id="recursos-content" class="hidden space-y-md md:space-y-lg">
+    <!-- Header Info -->
+    <section class="space-y-sm">
+      <h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background" id="centro-nombre">Lista de recursos necesarios</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant" id="centro-meta"></p>
+    </section>
+
+    <!-- Categorized Resource List (rendered dynamically) -->
+    <div id="recursos-list" class="space-y-lg"></div>
+
+    <!-- Add Button -->
+    <div class="pt-md">
+      <button id="btn-agregar" class="w-full bg-primary text-on-primary font-bold py-md rounded-xl shadow-xl active:scale-95 transition-transform flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined">add</span>
+        <span>Agregar insumos necesarios</span>
+      </button>
+    </div>
+  </div>
+</main>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<!-- App Scripts -->
+<script src="/assets/js/firebase-init.js"></script>
+<script src="/assets/js/auth.js"></script>
+<script src="/assets/js/recursos-categorias.js"></script>
+<script src="/assets/js/lista-recursos.js"></script>
+</body>
+</html>

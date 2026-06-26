@@ -17,6 +17,12 @@
     "reportes": {
       ".read": false,
       ".write": true
+    },
+    "usuarios": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
     }
   }
 }

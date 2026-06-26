@@ -1,57 +1,73 @@
 /*
- * Acopify - Login page logic
+ * Acopify - Login page logic (sign in only)
+ *
+ * Registration lives in registro.html / registro.js.
+ * Password recovery lives in recuperar.html / recuperar.js.
  */
 
 (function () {
-  var isRegister = false;
   var form = document.getElementById("form-login");
   var btnGoogle = document.getElementById("btn-google");
   var btnSubmit = document.getElementById("btn-submit");
-  var toggleLink = document.getElementById("toggle-mode");
   var errorDiv = document.getElementById("auth-error");
-  var heading = document.querySelector(".auth-card h1");
-  var subtitle = document.querySelector(".auth-subtitle");
-  var footerText = document.querySelector(".auth-footer");
+  var infoDiv = document.getElementById("auth-info");
+
+  // Where to send the user after a successful, verified login.
+  function getRedirectTarget() {
+    return sessionStorage.getItem("postLoginRedirect") || "/mis-centros.html";
+  }
+
+  function goToTarget() {
+    var target = getRedirectTarget();
+    sessionStorage.removeItem("postLoginRedirect");
+    window.location.href = target;
+  }
+
+  // Show any message handed over from another auth page (e.g. after registering).
+  var handoffInfo = sessionStorage.getItem("authInfo");
+  if (handoffInfo) {
+    sessionStorage.removeItem("authInfo");
+    showInfo(handoffInfo);
+  }
 
   auth.onAuthStateChanged(function (user) {
+    // If a verified user (or a Google user) is already signed in, continue.
     if (user) {
-      window.location.href = "/";
+      var isPasswordProvider = user.providerData.some(function (p) {
+        return p.providerId === "password";
+      });
+      if (!isPasswordProvider || user.emailVerified) {
+        goToTarget();
+      }
     }
-  });
-
-  toggleLink.addEventListener("click", function (e) {
-    e.preventDefault();
-    isRegister = !isRegister;
-    if (isRegister) {
-      heading.textContent = "Crear cuenta";
-      subtitle.textContent = "Registrate para gestionar centros de acopio";
-      btnSubmit.textContent = "Crear cuenta";
-      footerText.innerHTML = 'Ya tienes cuenta? <a href="#" id="toggle-mode">Iniciar sesion</a>';
-    } else {
-      heading.textContent = "Iniciar sesion";
-      subtitle.textContent = "Ingresa para gestionar tus centros de acopio";
-      btnSubmit.textContent = "Iniciar sesion";
-      footerText.innerHTML = 'No tienes cuenta? <a href="#" id="toggle-mode">Crear cuenta</a>';
-    }
-    document.getElementById("toggle-mode").addEventListener("click", arguments.callee.bind(this));
-    hideError();
   });
 
   form.addEventListener("submit", function (e) {
     e.preventDefault();
-    hideError();
+    hideMessages();
     btnSubmit.disabled = true;
 
     var email = document.getElementById("email").value.trim();
     var password = document.getElementById("password").value;
 
-    var promise = isRegister
-      ? auth.createUserWithEmailAndPassword(email, password)
-      : auth.signInWithEmailAndPassword(email, password);
-
-    promise
-      .then(function () {
-        window.location.href = "/";
+    auth.signInWithEmailAndPassword(email, password)
+      .then(function (cred) {
+        if (!cred.user.emailVerified) {
+          // Block unverified accounts; offer to resend the email.
+          return cred.user.sendEmailVerification()
+            .catch(function () {})
+            .then(function () {
+              return auth.signOut();
+            })
+            .then(function () {
+              showInfo(
+                "Tu cuenta aun no esta verificada. Te reenviamos el correo de confirmacion a " +
+                email + ". Revisa tu bandeja de entrada."
+              );
+              btnSubmit.disabled = false;
+            });
+        }
+        goToTarget();
       })
       .catch(function (error) {
         showError(translateError(error.code));
@@ -60,10 +76,12 @@
   });
 
   btnGoogle.addEventListener("click", function () {
+    hideMessages();
     var provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider)
       .then(function () {
-        window.location.href = "/";
+        // Google accounts are already verified.
+        goToTarget();
       })
       .catch(function (error) {
         showError(translateError(error.code));
@@ -73,22 +91,31 @@
   function showError(msg) {
     errorDiv.textContent = msg;
     errorDiv.classList.remove("hidden");
+    if (infoDiv) infoDiv.classList.add("hidden");
   }
 
-  function hideError() {
+  function showInfo(msg) {
+    if (!infoDiv) return;
+    infoDiv.textContent = msg;
+    infoDiv.classList.remove("hidden");
     errorDiv.classList.add("hidden");
+  }
+
+  function hideMessages() {
+    errorDiv.classList.add("hidden");
+    if (infoDiv) infoDiv.classList.add("hidden");
   }
 
   function translateError(code) {
     var errors = {
-      "auth/email-already-in-use": "Este correo ya esta registrado.",
       "auth/invalid-email": "Correo electronico invalido.",
-      "auth/weak-password": "La contrasena debe tener al menos 6 caracteres.",
       "auth/user-not-found": "No se encontro una cuenta con este correo.",
       "auth/wrong-password": "Contrasena incorrecta.",
       "auth/too-many-requests": "Demasiados intentos. Intenta de nuevo mas tarde.",
       "auth/popup-closed-by-user": "Se cerro la ventana de inicio de sesion.",
-      "auth/invalid-credential": "Credenciales invalidas. Verifica tu correo y contrasena."
+      "auth/invalid-credential": "Credenciales invalidas. Verifica tu correo y contrasena.",
+      "auth/missing-email": "Ingresa tu correo electronico.",
+      "auth/user-disabled": "Esta cuenta ha sido deshabilitada."
     };
     return errors[code] || "Error de autenticacion. Intenta de nuevo.";
   }

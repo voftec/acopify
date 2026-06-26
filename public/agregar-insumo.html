@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html class="light" lang="es">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>Acopify - Agregar Insumo</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-tertiary": "#ffffff",
+          "inverse-on-surface": "#eaf1ff",
+          "surface-dim": "#ccdbf3",
+          "on-primary-fixed-variant": "#003ea8",
+          "outline": "#737686",
+          "on-error": "#ffffff",
+          "tertiary": "#ae0010",
+          "on-secondary-container": "#5c2400",
+          "on-surface": "#0d1c2e",
+          "on-primary": "#ffffff",
+          "on-secondary-fixed": "#341100",
+          "secondary-fixed-dim": "#ffb690",
+          "on-tertiary-container": "#ffecea",
+          "inverse-surface": "#233144",
+          "on-tertiary-fixed-variant": "#93000b",
+          "on-secondary": "#ffffff",
+          "tertiary-fixed": "#ffdad6",
+          "surface-tint": "#0053db",
+          "surface-bright": "#f8f9ff",
+          "on-primary-fixed": "#00174b",
+          "primary-fixed": "#dbe1ff",
+          "surface": "#f8f9ff",
+          "surface-container-highest": "#d5e3fc",
+          "primary-fixed-dim": "#b4c5ff",
+          "on-tertiary-fixed": "#410002",
+          "surface-container": "#e6eeff",
+          "surface-container-low": "#eff4ff",
+          "error": "#ba1a1a",
+          "secondary": "#9d4300",
+          "error-container": "#ffdad6",
+          "secondary-container": "#fd761a",
+          "primary-container": "#2563eb",
+          "on-surface-variant": "#434655",
+          "on-error-container": "#93000a",
+          "background": "#f8f9ff",
+          "tertiary-container": "#d52022",
+          "on-secondary-fixed-variant": "#783200",
+          "on-primary-container": "#eeefff",
+          "inverse-primary": "#b4c5ff",
+          "surface-container-lowest": "#ffffff",
+          "secondary-fixed": "#ffdbca",
+          "tertiary-fixed-dim": "#ffb4ab",
+          "primary": "#004ac6",
+          "outline-variant": "#c3c6d7",
+          "surface-variant": "#d5e3fc",
+          "surface-container-high": "#dce9ff",
+          "on-background": "#0d1c2e"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "spacing": {
+          "container-margin-desktop": "40px",
+          "lg": "24px",
+          "sm": "8px",
+          "container-margin-mobile": "16px",
+          "xl": "32px",
+          "gutter": "16px",
+          "xs": "4px",
+          "unit": "4px",
+          "md": "16px"
+        },
+        "fontFamily": {
+          "status-sm": ["Inter"],
+          "headline-lg-mobile": ["Inter"],
+          "display-lg": ["Inter"],
+          "body-lg": ["Inter"],
+          "headline-md": ["Inter"],
+          "headline-lg": ["Inter"],
+          "body-md": ["Inter"],
+          "label-md": ["Inter"]
+        },
+        "fontSize": {
+          "status-sm": ["12px", {"lineHeight": "16px", "fontWeight": "700"}],
+          "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+          "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+          "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+          "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+          "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+          "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+          "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+        }
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  .category-card.active {
+    border-color: #004ac6;
+    background-color: #e6eeff;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased">
+
+<!-- TopAppBar Overlay Header -->
+<header class="fixed top-0 inset-x-0 z-50 bg-surface-container-lowest shadow-sm border-b border-outline-variant flex items-center justify-between px-container-margin-mobile py-4 w-full h-16">
+  <div class="flex items-center gap-4">
+    <button id="btn-cerrar" aria-label="Cerrar" class="p-2 -ml-2 rounded-full hover:bg-surface-container transition-colors">
+      <span class="material-symbols-outlined text-on-surface-variant">close</span>
+    </button>
+    <h1 class="font-headline-md text-headline-md font-bold text-primary">Agregar Insumo</h1>
+  </div>
+  <button id="btn-guardar" class="px-4 py-2 bg-primary-container text-on-primary-container font-label-md text-label-md rounded-full hover:opacity-90 active:scale-95 transition-all shadow-sm">
+    GUARDAR
+  </button>
+</header>
+
+<main class="pt-20 pb-24 px-container-margin-mobile md:max-w-3xl md:mx-auto">
+  <div class="space-y-xl">
+
+    <!-- Categoría Selection -->
+    <section class="space-y-md">
+      <div class="flex justify-between items-end">
+        <h2 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Categoría</h2>
+        <span class="text-status-sm text-primary">Selecciona una</span>
+      </div>
+      <div class="grid grid-cols-2 gap-md" id="categorias-grid">
+        <!-- Category cards rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- Nombre del Insumo -->
+    <section class="space-y-sm">
+      <label class="block font-label-md text-label-md text-on-surface-variant" for="insumo-name">Nombre del insumo</label>
+      <input class="w-full h-14 px-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary text-body-md transition-all outline-none" id="insumo-name" placeholder="Ej. Agua potable, Suero fisiológico" type="text">
+    </section>
+
+    <!-- Prioridad -->
+    <section class="space-y-md">
+      <label class="block font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Prioridad del Requerimiento</label>
+      <div class="flex p-1 bg-surface-container-low rounded-full border border-outline-variant">
+        <button type="button" class="priority-toggle flex-1 py-3 px-4 rounded-full font-label-md text-label-md text-on-surface-variant hover:bg-surface-container transition-all" data-priority="baja">Baja</button>
+        <button type="button" class="priority-toggle flex-1 py-3 px-4 rounded-full font-label-md text-label-md text-on-surface-variant hover:bg-surface-container transition-all" data-priority="media">Media</button>
+        <button type="button" class="priority-toggle flex-1 py-3 px-4 rounded-full font-label-md text-label-md text-on-surface-variant hover:bg-surface-container transition-all" data-priority="alta">Alta</button>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- Success Feedback Area -->
+<div class="fixed bottom-container-margin-mobile left-container-margin-mobile right-container-margin-mobile translate-y-32 transition-transform duration-300 z-[60]" id="save-feedback">
+  <div class="bg-inverse-surface text-inverse-on-surface p-4 rounded-xl flex items-center justify-between shadow-xl">
+    <span class="font-body-md" id="feedback-text">Insumo guardado correctamente</span>
+    <button class="text-primary-fixed font-label-md uppercase px-2" id="feedback-close">Cerrar</button>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<!-- App Scripts -->
+<script src="/assets/js/firebase-init.js"></script>
+<script src="/assets/js/auth.js"></script>
+<script src="/assets/js/recursos-categorias.js"></script>
+<script src="/assets/js/agregar-insumo.js"></script>
+</body>
+</html>

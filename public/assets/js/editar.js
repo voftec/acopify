@@ -16,13 +16,18 @@
   var centroRef = db.ref("centros/" + centroId);
   var map, marker;
   var currentNeeds = {};
+  var formBuilt = false;
 
   auth.onAuthStateChanged(function (user) {
     if (!user) {
       contentEl.innerHTML =
-        '<div class="alert alert-info" style="margin-top: 24px;">Debes <a href="/login">iniciar sesion</a> para editar un centro.</div>';
+        '<div class="alert alert-info" style="margin-top: 24px;">Debes <a href="/login.html">iniciar sesion</a> para editar un centro.</div>';
       return;
     }
+
+    // Auth can re-fire (token refresh); only build the form once to avoid
+    // rebuilding the map and stacking duplicate listeners on unsaved edits.
+    if (formBuilt) return;
 
     centroRef.once("value").then(function (snapshot) {
       var centro = snapshot.val();
@@ -34,9 +39,10 @@
       if (centro.organizadorId !== user.uid) {
         contentEl.innerHTML =
           '<div class="alert alert-error" style="margin-top: 24px;">No tienes permiso para editar este centro.</div>' +
-          '<a href="/centro?id=' + centroId + '" class="btn btn-secondary" style="margin-top: 12px;">Ver centro</a>';
+          '<a href="/centro.html?id=' + centroId + '" class="btn btn-secondary" style="margin-top: 12px;">Ver centro</a>';
         return;
       }
+      formBuilt = true;
       renderEditForm(centro);
     });
   });

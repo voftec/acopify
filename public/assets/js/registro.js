@@ -1,194 +1,126 @@
 /*
- * Acopify - Centro registration form
+ * Acopify - User registration page logic
  */
 
 (function () {
-  var map, marker;
-  var selectedLat = null;
-  var selectedLng = null;
-  var needs = [];
   var form = document.getElementById("form-registro");
-  var authRequired = document.getElementById("auth-required");
-  var errorDiv = document.getElementById("form-error");
-  var coordsDisplay = document.getElementById("coords-display");
-  var needsList = document.getElementById("needs-list");
-  var needInput = document.getElementById("need-input");
-  var btnAddNeed = document.getElementById("btn-add-need");
+  var btnGoogle = document.getElementById("btn-google");
   var btnSubmit = document.getElementById("btn-submit");
+  var errorDiv = document.getElementById("auth-error");
+  var infoDiv = document.getElementById("auth-info");
 
-  // Venezuela center
-  var VZ_CENTER = [10.48, -66.87]; // Caracas
-  var VZ_ZOOM = 12;
+  // True while we are in the middle of creating an account (we sign the user
+  // out right after, so we must not auto-redirect them as "logged in").
+  var registering = false;
+
+  function getRedirectTarget() {
+    return sessionStorage.getItem("postLoginRedirect") || "/mis-centros.html";
+  }
+
+  function goToTarget() {
+    var target = getRedirectTarget();
+    sessionStorage.removeItem("postLoginRedirect");
+    window.location.href = target;
+  }
 
   auth.onAuthStateChanged(function (user) {
-    if (user) {
-      form.classList.remove("hidden");
-      authRequired.classList.add("hidden");
-      initMap();
-    } else {
-      form.classList.add("hidden");
-      authRequired.classList.remove("hidden");
-    }
-  });
-
-  function initMap() {
-    if (map) return;
-    map = L.map("map-registro").setView(VZ_CENTER, VZ_ZOOM);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 19
-    }).addTo(map);
-
-    marker = L.marker(VZ_CENTER, { draggable: true }).addTo(map);
-    selectedLat = VZ_CENTER[0];
-    selectedLng = VZ_CENTER[1];
-    updateCoordsDisplay();
-
-    marker.on("dragend", function () {
-      var pos = marker.getLatLng();
-      selectedLat = pos.lat;
-      selectedLng = pos.lng;
-      updateCoordsDisplay();
-    });
-
-    map.on("click", function (e) {
-      selectedLat = e.latlng.lat;
-      selectedLng = e.latlng.lng;
-      marker.setLatLng(e.latlng);
-      updateCoordsDisplay();
-    });
-  }
-
-  function updateCoordsDisplay() {
-    coordsDisplay.textContent = "Lat: " + selectedLat.toFixed(6) + ", Lng: " + selectedLng.toFixed(6);
-  }
-
-  // Needs management
-  btnAddNeed.addEventListener("click", addNeed);
-  needInput.addEventListener("keydown", function (e) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addNeed();
-    }
-  });
-
-  function addNeed() {
-    var val = needInput.value.trim();
-    if (!val) return;
-    if (needs.indexOf(val) !== -1) return;
-    needs.push(val);
-    renderNeeds();
-    needInput.value = "";
-    needInput.focus();
-  }
-
-  function removeNeed(index) {
-    needs.splice(index, 1);
-    renderNeeds();
-  }
-
-  function renderNeeds() {
-    if (needs.length === 0) {
-      needsList.innerHTML = '<span class="needs-empty">Sin necesidades agregadas aun</span>';
-      return;
-    }
-    var html = "";
-    needs.forEach(function (n, i) {
-      html +=
-        '<span class="tag tag-warning tag-removable" data-index="' + i + '">' +
-        escapeHtml(n) +
-        ' <button type="button" class="tag-remove" data-index="' + i + '">&times;</button>' +
-        '</span>';
-    });
-    needsList.innerHTML = html;
-
-    needsList.querySelectorAll(".tag-remove").forEach(function (btn) {
-      btn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        removeNeed(parseInt(btn.getAttribute("data-index")));
+    // A verified user (or Google user) who is already signed in shouldn't be
+    // on the registration page; send them along.
+    if (user && !registering) {
+      var isPasswordProvider = user.providerData.some(function (p) {
+        return p.providerId === "password";
       });
-    });
-  }
+      if (!isPasswordProvider || user.emailVerified) {
+        goToTarget();
+      }
+    }
+  });
 
-  renderNeeds();
-
-  // Form submit
   form.addEventListener("submit", function (e) {
     e.preventDefault();
-    hideError();
+    hideMessages();
 
-    if (!currentUser) {
-      showError("Debes iniciar sesion para registrar un centro.");
+    var nombre = document.getElementById("nombre").value.trim();
+    var email = document.getElementById("email").value.trim();
+    var password = document.getElementById("password").value;
+    var password2 = document.getElementById("password2").value;
+
+    if (!nombre) {
+      showError("Por favor ingresa tu nombre.");
       return;
     }
-
-    if (selectedLat === null || selectedLng === null) {
-      showError("Selecciona la ubicacion en el mapa.");
+    if (password.length < 6) {
+      showError("La contrasena debe tener al menos 6 caracteres.");
+      return;
+    }
+    if (password !== password2) {
+      showError("Las contrasenas no coinciden.");
       return;
     }
 
     btnSubmit.disabled = true;
-    btnSubmit.textContent = "Registrando...";
+    registering = true;
 
-    var centroData = {
-      nombre: document.getElementById("nombre").value.trim(),
-      descripcion: document.getElementById("descripcion").value.trim(),
-      direccion: {
-        calle: document.getElementById("calle").value.trim(),
-        ciudad: document.getElementById("ciudad").value.trim(),
-        estado: document.getElementById("estado").value.trim(),
-        piso: document.getElementById("piso").value.trim()
-      },
-      coordenadas: {
-        lat: selectedLat,
-        lng: selectedLng
-      },
-      contacto: {
-        telefono: document.getElementById("telefono").value.trim(),
-        whatsapp: document.getElementById("whatsapp").value.trim()
-      },
-      organizadorId: currentUser.uid,
-      organizadorNombre: currentUser.displayName || currentUser.email.split("@")[0],
-      creadoEn: firebase.database.ServerValue.TIMESTAMP,
-      reportes: 0
-    };
-
-    // Build needs object
-    var necesidades = {};
-    needs.forEach(function (n) {
-      var key = db.ref().push().key;
-      necesidades[key] = {
-        nombre: n,
-        agregado: firebase.database.ServerValue.TIMESTAMP
-      };
-    });
-    centroData.necesidades = necesidades;
-
-    var newRef = db.ref("centros").push();
-    newRef.set(centroData)
+    auth.createUserWithEmailAndPassword(email, password)
+      .then(function (cred) {
+        return cred.user.updateProfile({ displayName: nombre })
+          .then(function () {
+            return cred.user.sendEmailVerification();
+          })
+          .then(function () {
+            return auth.signOut();
+          });
+      })
       .then(function () {
-        window.location.href = "/centro?id=" + newRef.key;
+        registering = false;
+        // Hand off a message and redirect to login.
+        sessionStorage.setItem(
+          "authInfo",
+          "Te enviamos un correo de confirmacion a " + email +
+          ". Verifica tu cuenta y luego inicia sesion."
+        );
+        window.location.href = "/login.html";
       })
       .catch(function (error) {
-        showError("Error al registrar: " + error.message);
+        registering = false;
+        showError(translateError(error.code));
         btnSubmit.disabled = false;
-        btnSubmit.textContent = "Registrar Centro";
+      });
+  });
+
+  btnGoogle.addEventListener("click", function () {
+    hideMessages();
+    var provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider)
+      .then(function () {
+        // Google accounts are already verified.
+        goToTarget();
+      })
+      .catch(function (error) {
+        showError(translateError(error.code));
       });
   });
 
   function showError(msg) {
     errorDiv.textContent = msg;
     errorDiv.classList.remove("hidden");
-    window.scrollTo(0, 0);
+    if (infoDiv) infoDiv.classList.add("hidden");
   }
 
-  function hideError() {
+  function hideMessages() {
     errorDiv.classList.add("hidden");
+    if (infoDiv) infoDiv.classList.add("hidden");
   }
 
-  function escapeHtml(str) {
-    var div = document.createElement("div");
-    div.textContent = str;
-    return div.innerHTML;
+  function translateError(code) {
+    var errors = {
+      "auth/email-already-in-use": "Este correo ya esta registrado. Inicia sesion.",
+      "auth/invalid-email": "Correo electronico invalido.",
+      "auth/weak-password": "La contrasena debe tener al menos 6 caracteres.",
+      "auth/too-many-requests": "Demasiados intentos. Intenta de nuevo mas tarde.",
+      "auth/popup-closed-by-user": "Se cerro la ventana de registro.",
+      "auth/operation-not-allowed": "El registro con correo no esta habilitado."
+    };
+    return errors[code] || "Error al crear la cuenta. Intenta de nuevo.";
   }
 })();
