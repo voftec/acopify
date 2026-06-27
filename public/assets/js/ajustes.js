@@ -3,6 +3,12 @@
  */
 
 (function () {
+  // Check if Firebase is properly initialized
+  if (!auth || !db) {
+    console.error("Firebase not initialized in ajustes.js");
+    return;
+  }
+
   var loadingState = document.getElementById("loading-state");
   var authRequired = document.getElementById("auth-required");
   var profileContent = document.getElementById("profile-content");
@@ -45,21 +51,18 @@
         '<img src="' + u.photoURL + '" alt="Avatar" class="w-full h-full object-cover" referrerpolicy="no-referrer">';
     }
 
-    // Load phone from RTDB profile
-    db.ref("usuarios/" + u.uid).once("value")
-      .then(function (snapshot) {
-        var profile = snapshot.val();
-        if (profile) {
-          if (profile.telefono) phoneInput.value = profile.telefono;
-          if (profile.nombre && !u.displayName) {
-            nameInput.value = profile.nombre;
-            profileName.textContent = profile.nombre;
-          }
+    // Load phone from RTDB profile using FirebaseDataManager
+    FirebaseDataManager.getUserProfile(u.uid).then(function (profile) {
+      if (profile) {
+        if (profile.telefono) phoneInput.value = profile.telefono;
+        if (profile.nombre && !u.displayName) {
+          nameInput.value = profile.nombre;
+          profileName.textContent = profile.nombre;
         }
-      })
-      .catch(function () {
-        // Ignore load errors, keep defaults
-      });
+      }
+    }).catch(function () {
+      // Ignore load errors, keep defaults
+    });
   }
 
   // Save changes
@@ -82,14 +85,15 @@
     btnGuardar.disabled = true;
     btnGuardar.innerHTML = '<span class="material-symbols-outlined animate-spin" data-icon="sync">sync</span> Guardando...';
 
-    // Update Firebase Auth profile + RTDB profile
+    // Update Firebase Auth profile + RTDB profile using FirebaseDataManager
     var updateAuth = user.updateProfile({ displayName: nombre });
-    var updateDb = db.ref("usuarios/" + user.uid).update({
+    var profileData = {
       nombre: nombre,
       telefono: telefono,
       email: user.email,
       actualizadoEn: firebase.database.ServerValue.TIMESTAMP
-    });
+    };
+    var updateDb = FirebaseDataManager.updateUserProfile(user.uid, profileData);
 
     Promise.all([updateAuth, updateDb])
       .then(function () {
@@ -135,4 +139,11 @@
   function hideMessage() {
     formMessage.classList.add("hidden");
   }
+
+  // Cleanup Firebase listeners on page unload
+  window.addEventListener("beforeunload", function () {
+    if (window.FirebaseDataManager) {
+      FirebaseDataManager.cleanup();
+    }
+  });
 })();

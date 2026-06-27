@@ -40,8 +40,20 @@ try {
   if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
   }
-  db = firebase.database();
-  auth = firebase.auth();
+  // Initialize each service defensively. A compat script (database / auth /
+  // analytics) may be blocked by ad-blockers or fail to load; in that case the
+  // corresponding global is undefined and we leave the variable as null instead
+  // of throwing. Downstream scripts already guard with `if (!auth || !db)`.
+  if (typeof firebase.database === 'function') {
+    db = firebase.database();
+  } else {
+    console.warn("Firebase Database not loaded");
+  }
+  if (typeof firebase.auth === 'function') {
+    auth = firebase.auth();
+  } else {
+    console.warn("Firebase Auth not loaded");
+  }
   if (typeof firebase.analytics === 'function') {
     analytics = firebase.analytics();
     console.log("Firebase and Analytics initialized successfully");

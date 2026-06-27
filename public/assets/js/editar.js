@@ -3,6 +3,12 @@
  */
 
 (function () {
+  // Check if Firebase is properly initialized
+  if (!db || !auth) {
+    console.error("Firebase not initialized in editar.js");
+    return;
+  }
+
   var contentEl = document.getElementById("editar-content");
   var params = new URLSearchParams(window.location.search);
   var centroId = params.get("id");
@@ -29,8 +35,8 @@
     // rebuilding the map and stacking duplicate listeners on unsaved edits.
     if (formBuilt) return;
 
-    centroRef.once("value").then(function (snapshot) {
-      var centro = snapshot.val();
+    // Use FirebaseDataManager for efficient caching
+    FirebaseDataManager.getCentro(centroId).then(function (centro) {
       if (!centro) {
         contentEl.innerHTML =
           '<div class="empty-state"><p>Centro no encontrado.</p><a href="/" class="btn btn-primary">Volver</a></div>';
@@ -44,6 +50,10 @@
       }
       formBuilt = true;
       renderEditForm(centro);
+    }).catch(function (error) {
+      console.error("Error loading centro:", error);
+      contentEl.innerHTML =
+        '<div class="empty-state"><p>Error al cargar el centro.</p><a href="/" class="btn btn-primary">Volver</a></div>';
     });
   });
 
@@ -52,13 +62,13 @@
 
     var html =
       '<h1 style="margin: 24px 0 8px;">Editar Centro de Acopio</h1>' +
-      '<p class="mb-16" style="color: var(--color-text-secondary);">Modifica la informacion de tu centro. Los cambios se veran reflejados inmediatamente.</p>' +
+      '<p class="mb-md text-on-surface-variant">Modifica la informacion de tu centro. Los cambios se veran reflejados inmediatamente.</p>' +
       '<div id="edit-error" class="alert alert-error hidden"></div>' +
       '<div id="edit-success" class="alert alert-success hidden"></div>' +
 
       '<form id="form-editar">' +
       '<div class="form-group">' +
-      '<label class="form-label" for="nombre">Nombre del centro *</label>' +
+      '<label class="form-label" for="nombre">Nombre del centro <span class="required-asterisk">*</span></label>' +
       '<input class="form-input" type="text" id="nombre" required value="' + escapeAttr(centro.nombre) + '" />' +
       '</div>' +
 
@@ -67,27 +77,27 @@
       '<textarea class="form-textarea" id="descripcion" rows="3">' + escapeHtml(centro.descripcion || "") + '</textarea>' +
       '</div>' +
 
-      '<h3 class="mb-8" style="margin-top: 24px;">Direccion</h3>' +
+      '<h3 class="mb-sm" style="margin-top: 24px;">Direccion</h3>' +
       '<div class="form-row">' +
-      '<div class="form-group"><label class="form-label" for="calle">Calle / Avenida *</label>' +
+      '<div class="form-group"><label class="form-label" for="calle">Calle / Avenida <span class="required-asterisk">*</span></label>' +
       '<input class="form-input" type="text" id="calle" required value="' + escapeAttr(centro.direccion ? centro.direccion.calle : "") + '" /></div>' +
-      '<div class="form-group"><label class="form-label" for="ciudad">Ciudad *</label>' +
+      '<div class="form-group"><label class="form-label" for="ciudad">Ciudad <span class="required-asterisk">*</span></label>' +
       '<input class="form-input" type="text" id="ciudad" required value="' + escapeAttr(centro.direccion ? centro.direccion.ciudad : "") + '" /></div>' +
       '</div>' +
 
       '<div class="form-row">' +
-      '<div class="form-group"><label class="form-label" for="estado">Estado *</label>' +
+      '<div class="form-group"><label class="form-label" for="estado">Estado <span class="required-asterisk">*</span></label>' +
       '<input class="form-input" type="text" id="estado" required value="' + escapeAttr(centro.direccion ? centro.direccion.estado : "") + '" /></div>' +
       '<div class="form-group"><label class="form-label" for="piso">Piso / Apartamento</label>' +
       '<input class="form-input" type="text" id="piso" value="' + escapeAttr(centro.direccion ? centro.direccion.piso : "") + '" /></div>' +
       '</div>' +
 
-      '<h3 class="mb-8" style="margin-top: 24px;">Ubicacion en el mapa</h3>' +
-      '<p class="form-hint mb-8">Arrastra el marcador para cambiar la ubicacion.</p>' +
+      '<h3 class="mb-sm" style="margin-top: 24px;">Ubicacion en el mapa</h3>' +
+      '<p class="form-hint mb-sm">Arrastra el marcador para cambiar la ubicacion.</p>' +
       '<div class="map-form-container"><div id="map-editar"></div></div>' +
       '<p class="form-hint" id="coords-display">Lat: --, Lng: --</p>' +
 
-      '<h3 class="mb-8" style="margin-top: 24px;">Contacto</h3>' +
+      '<h3 class="mb-sm" style="margin-top: 24px;">Contacto</h3>' +
       '<div class="form-row">' +
       '<div class="form-group"><label class="form-label" for="telefono">Telefono</label>' +
       '<input class="form-input" type="tel" id="telefono" value="' + escapeAttr(centro.contacto ? centro.contacto.telefono : "") + '" /></div>' +
@@ -100,10 +110,10 @@
       '</div>' +
       '</form>' +
 
-      '<hr style="margin: 32px 0; border: none; border-top: 1px solid var(--color-border);" />' +
+      '<hr class="my-xl border-t border-outline-variant" />' +
 
       '<h2 style="margin-bottom: 16px;">Gestionar necesidades</h2>' +
-      '<p class="form-hint mb-16">Agrega o elimina recursos que tu centro necesita. Los cambios se actualizan en tiempo real para los donantes.</p>' +
+      '<p class="form-hint mb-md">Agrega o elimina recursos que tu centro necesita. Los cambios se actualizan en tiempo real para los donantes.</p>' +
       '<div class="needs-list" id="needs-list"></div>' +
       '<div class="add-need-row" style="margin-bottom: 32px;">' +
       '<input class="form-input" type="text" id="need-input" placeholder="Ej: Agua, Comida, Medicinas..." />' +
@@ -141,10 +151,15 @@
     });
 
     // Render needs with real-time listener
-    centroRef.child("necesidades").on("value", function (snapshot) {
+    var needsListener = function (snapshot) {
       currentNeeds = snapshot.val() || {};
       renderNeeds();
-    });
+    };
+    centroRef.child("necesidades").on("value", needsListener);
+    
+    // Store listener for cleanup
+    window.editarNeedsListener = needsListener;
+    window.editarCentroRef = centroRef;
 
     // Add need
     var needInput = document.getElementById("need-input");
@@ -278,4 +293,14 @@
     div.textContent = str;
     return div.innerHTML;
   }
+
+  // Cleanup Firebase listeners on page unload
+  window.addEventListener("beforeunload", function () {
+    if (window.editarCentroRef && window.editarNeedsListener) {
+      window.editarCentroRef.child("necesidades").off("value", window.editarNeedsListener);
+    }
+    if (window.FirebaseDataManager) {
+      FirebaseDataManager.cleanup();
+    }
+  });
 })();

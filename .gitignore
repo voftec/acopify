@@ -20,3 +20,6 @@ Thumbs.db
 # Environment
 .env
 .env.local
+
+# Tooling artifacts
+.playwright-mcp/

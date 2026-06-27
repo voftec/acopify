@@ -4,17 +4,22 @@
 
 var currentUser = null;
 
-auth.onAuthStateChanged(function (user) {
-  currentUser = user;
-  updateNavAuth(user);
-});
+// Check if Firebase is properly initialized
+if (auth) {
+  auth.onAuthStateChanged(function (user) {
+    currentUser = user;
+    updateNavAuth(user);
+  });
+} else {
+  console.error("Firebase auth not initialized in auth.js");
+}
 
 function updateNavAuth(user) {
   var navActions = document.getElementById("nav-actions");
   if (!navActions) return;
 
   if (user) {
-    var displayName = user.displayName || user.email.split("@")[0];
+    var displayName = user.displayName || (user.email && user.email.split("@")[0]) || "Usuario";
     navActions.innerHTML =
       '<a href="/mis-centros.html" class="nav-link">Mis centros</a>' +
       '<a href="/crear-centro-p1.html" class="nav-link">+ Registrar</a>' +

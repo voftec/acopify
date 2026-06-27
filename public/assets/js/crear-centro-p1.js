@@ -3,6 +3,12 @@
  */
 
 (function () {
+  // Check if Firebase is properly initialized
+  if (!auth || !db) {
+    console.error("Firebase not initialized in crear-centro-p1.js");
+    return;
+  }
+
   var form = document.getElementById("form-crear-centro");
   var authRequired = document.getElementById("auth-required");
   var errorDiv = document.getElementById("form-error");

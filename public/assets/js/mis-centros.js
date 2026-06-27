@@ -3,6 +3,12 @@
  */
 
 (function () {
+  // Check if Firebase is properly initialized
+  if (!auth || !db) {
+    console.error("Firebase not initialized in mis-centros.js");
+    return;
+  }
+
   var centrosList = document.getElementById("centros-list");
   var authRequired = document.getElementById("auth-required");
   var mainContent = document.getElementById("main-content");
@@ -31,13 +37,10 @@
   });
 
   function loadMyCentros(uid) {
-    db.ref("centros")
-      .orderByChild("organizadorId")
-      .equalTo(uid)
-      .on("value", function (snapshot) {
-        var centros = snapshot.val();
-        renderCentros(centros);
-      });
+    // Use FirebaseDataManager for efficient caching
+    FirebaseDataManager.getUserCentros(uid, function (centros) {
+      renderCentros(centros);
+    });
   }
 
   function renderCentros(centros) {
@@ -144,4 +147,11 @@
       }
     });
   }
+
+  // Cleanup Firebase listeners on page unload
+  window.addEventListener("beforeunload", function () {
+    if (window.FirebaseDataManager) {
+      FirebaseDataManager.cleanup();
+    }
+  });
 })();

@@ -3,6 +3,12 @@
  */
 
 (function () {
+  // Check if Firebase is properly initialized
+  if (!db || !auth) {
+    console.error("Firebase not initialized in lista-recursos.js");
+    return;
+  }
+
   var params = new URLSearchParams(window.location.search);
   var centroId = params.get("id");
 
@@ -39,8 +45,8 @@
     }
     authRequired.classList.add("hidden");
 
-    centroRef.once("value").then(function (snapshot) {
-      var centro = snapshot.val();
+    // Use FirebaseDataManager for efficient caching
+    FirebaseDataManager.getCentro(centroId).then(function (centro) {
       loadingState.classList.add("hidden");
 
       if (!centro) {
@@ -60,9 +66,20 @@
       }
 
       // Realtime listener para los insumos del centro
-      centroRef.child("necesidades").on("value", function (snap) {
+      var needsListener = function (snap) {
         renderList(snap.val() || {});
-      });
+      };
+      centroRef.child("necesidades").on("value", needsListener);
+      
+      // Store listener for cleanup
+      window.listaRecursosNeedsListener = needsListener;
+      window.listaRecursosCentroRef = centroRef;
+    }).catch(function (error) {
+      console.error("Error loading centro:", error);
+      loadingState.classList.add("hidden");
+      content.classList.remove("hidden");
+      listEl.innerHTML =
+        '<p class="text-body-md text-error text-center py-lg">Error al cargar el centro. Por favor intenta de nuevo.</p>';
     });
   });
 
@@ -181,4 +198,14 @@
     div.textContent = str;
     return div.innerHTML;
   }
+
+  // Cleanup Firebase listeners on page unload
+  window.addEventListener("beforeunload", function () {
+    if (window.listaRecursosCentroRef && window.listaRecursosNeedsListener) {
+      window.listaRecursosCentroRef.child("necesidades").off("value", window.listaRecursosNeedsListener);
+    }
+    if (window.FirebaseDataManager) {
+      FirebaseDataManager.cleanup();
+    }
+  });
 })();

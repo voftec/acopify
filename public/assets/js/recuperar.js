@@ -3,6 +3,17 @@
  */
 
 (function () {
+  // Check if Firebase is properly initialized
+  if (!auth) {
+    console.error("Firebase not initialized in recuperar.js");
+    var errorDiv = document.getElementById("auth-error");
+    if (errorDiv) {
+      errorDiv.textContent = "Error al cargar Firebase. Por favor recarga la página.";
+      errorDiv.classList.remove("hidden");
+    }
+    return;
+  }
+
   var form = document.getElementById("form-recuperar");
   var btnSubmit = document.getElementById("btn-submit");
   var errorDiv = document.getElementById("auth-error");
