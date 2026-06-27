@@ -7,6 +7,12 @@
  */
 
 (function () {
+  // Check if Firebase is properly initialized
+  if (!db || !auth) {
+    console.error("Firebase not initialized in centro.js");
+    // Continue with mock data if Firebase is not available
+  }
+
   var contentEl = document.getElementById("centro-content");
   var modalEl = document.getElementById("modal-reportar");
   var needsModalEl = document.getElementById("modal-needs");
@@ -53,9 +59,8 @@
     usingMock = true;
     render(MOCK_CENTRO);
   } else {
-    var centroRef = db.ref("centros/" + centroId);
-    centroRef.on("value", function (snapshot) {
-      var centro = snapshot.val();
+    // Use FirebaseDataManager for efficient caching
+    FirebaseDataManager.listenCentro(centroId, function (centro) {
       if (!centro) {
         usingMock = true;
         render(MOCK_CENTRO);
@@ -81,10 +86,24 @@
     if (lastCentro) updateActions(lastCentro);
   });
 
+  var viewedCentros = {};
   function render(centro) {
     lastCentro = centro;
     if (!shellBuilt) buildShell(centro);
     updateDynamic(centro);
+
+    // Track view_centro once per render of this specific center
+    var idToTrack = usingMock ? "mock" : centroId;
+    if (!viewedCentros[idToTrack]) {
+      viewedCentros[idToTrack] = true;
+      if (typeof logAnalyticsEvent === 'function') {
+        logAnalyticsEvent("view_centro", {
+          centro_id: idToTrack,
+          centro_nombre: centro.nombre || "Desconocido",
+          estado: (centro.direccion && centro.direccion.estado) ? centro.direccion.estado : "Desconocido"
+        });
+      }
+    }
   }
 
   /* ----------------------------- Shell ----------------------------- */
@@ -187,7 +206,8 @@
       setTimeout(function () { if (detailMap) detailMap.invalidateSize(); }, 100);
     }
 
-    document.getElementById("btn-full-needs").addEventListener("click", openNeedsModal);
+    var btnFullNeeds = document.getElementById("btn-full-needs");
+    if (btnFullNeeds) btnFullNeeds.addEventListener("click", openNeedsModal);
     setupReportModal();
     setupNeedsModal();
     shellBuilt = true;
@@ -198,31 +218,62 @@
     var demo = document.getElementById("demo-banner");
     if (demo) demo.classList.toggle("hidden", !usingMock);
 
-    document.getElementById("d-nombre").textContent = c.nombre || "Centro de acopio";
-    document.getElementById("d-address").textContent = buildAddressString(c.direccion);
+    var nombreEl = document.getElementById("d-nombre");
+    if (nombreEl) nombreEl.textContent = c.nombre || "Centro de acopio";
+    
+    var addressEl = document.getElementById("d-address");
+    if (addressEl) addressEl.textContent = buildAddressString(c.direccion);
+    
     document.title = (c.nombre || "Centro") + " - Acopify";
 
     var descEl = document.getElementById("d-desc");
     if (c.descripcion) {
-      descEl.textContent = c.descripcion;
-      descEl.style.display = "";
+      if (descEl) descEl.textContent = c.descripcion;
+      if (descEl) descEl.style.display = "";
     } else {
-      descEl.style.display = "none";
+      if (descEl) descEl.style.display = "none";
     }
 
     renderNeeds(c.necesidades);
-    document.getElementById("d-horarios").innerHTML = buildHorariosHtml(c.horarios);
-    document.getElementById("d-contact").innerHTML = buildContactHtml(c.contacto);
-    document.getElementById("d-org").textContent = c.organizadorNombre || "Anónimo";
+    
+    var horariosEl = document.getElementById("d-horarios");
+    if (horariosEl) horariosEl.innerHTML = buildHorariosHtml(c.horarios);
+    
+    var contactEl = document.getElementById("d-contact");
+    if (contactEl) {
+      contactEl.innerHTML = buildContactHtml(c.contacto);
+      contactEl.querySelectorAll("a").forEach(function (link) {
+        link.addEventListener("click", function () {
+          var href = link.getAttribute("href") || "";
+          var type = href.startsWith("tel:") ? "llamada" : (href.indexOf("wa.me") !== -1 ? "whatsapp" : "otro");
+          if (typeof logAnalyticsEvent === 'function') {
+            logAnalyticsEvent("contact_click", {
+              centro_id: usingMock ? "mock" : centroId,
+              centro_nombre: c.nombre || "Desconocido",
+              contact_type: type
+            });
+          }
+        });
+      });
+    }
+    
+    var orgEl = document.getElementById("d-org");
+    if (orgEl) orgEl.textContent = c.organizadorNombre || "Anónimo";
 
     // Status + last update.
     var hasNeeds = c.necesidades && Object.keys(c.necesidades).length > 0;
     var statusEl = document.getElementById("d-status");
     var dotEl = document.getElementById("d-status-dot");
-    statusEl.textContent = hasNeeds ? "Estado: Recibiendo Donaciones" : "Estado: Operativo";
-    statusEl.className = "text-label-md font-label-md " + (hasNeeds ? "text-tertiary" : "text-primary");
-    dotEl.className = "w-2 h-2 rounded-full animate-pulse " + (hasNeeds ? "bg-tertiary" : "bg-primary");
-    document.getElementById("d-updated").textContent = "ACTUALIZADO " + relativeTime(latestUpdate(c));
+    if (statusEl) {
+      statusEl.textContent = hasNeeds ? "Estado: Recibiendo Donaciones" : "Estado: Operativo";
+      statusEl.className = "text-label-md font-label-md " + (hasNeeds ? "text-tertiary" : "text-primary");
+    }
+    if (dotEl) {
+      dotEl.className = "w-2 h-2 rounded-full animate-pulse " + (hasNeeds ? "bg-tertiary" : "bg-primary");
+    }
+    
+    var updatedEl = document.getElementById("d-updated");
+    if (updatedEl) updatedEl.textContent = "ACTUALIZADO " + relativeTime(latestUpdate(c));
 
     updateActions(c);
   }
@@ -233,25 +284,31 @@
     var needs = necesidades ? Object.values(necesidades) : [];
 
     if (needs.length === 0) {
-      title.innerHTML = '<span class="material-symbols-outlined text-[18px]">check_circle</span>SIN NECESIDADES URGENTES';
-      title.className = "text-label-md font-label-md text-primary mb-xs flex items-center gap-2";
-      ul.innerHTML = '<li class="text-body-md text-on-surface-variant p-sm">Este centro no tiene necesidades registradas actualmente.</li>';
+      if (title) {
+        title.innerHTML = '<span class="material-symbols-outlined text-[18px]">check_circle</span>SIN NECESIDADES URGENTES';
+        title.className = "text-label-md font-label-md text-primary mb-xs flex items-center gap-2";
+      }
+      if (ul) ul.innerHTML = '<li class="text-body-md text-on-surface-variant p-sm">Este centro no tiene necesidades registradas actualmente.</li>';
       return;
     }
 
-    title.innerHTML = '<span class="material-symbols-outlined text-[18px]">warning</span>NECESIDADES URGENTES';
-    title.className = "text-label-md font-label-md text-tertiary mb-xs flex items-center gap-2";
+    if (title) {
+      title.innerHTML = '<span class="material-symbols-outlined text-[18px]">warning</span>NECESIDADES URGENTES';
+      title.className = "text-label-md font-label-md text-tertiary mb-xs flex items-center gap-2";
+    }
 
     // Show up to 3 in the bento; the first is highlighted (most urgent).
-    ul.innerHTML = needs.slice(0, 3).map(function (n, i) {
-      var highlight = i === 0;
-      var cls = highlight
-        ? "bg-error-container text-on-error-container"
-        : "bg-surface-container-low text-on-surface";
-      return '<li class="flex items-center gap-3 p-sm rounded-lg ' + cls + '">' +
-        '<span class="material-symbols-outlined">' + needIcon(n.nombre) + '</span>' +
-        '<span class="text-label-md font-label-md">' + escapeHtml(n.nombre) + '</span></li>';
-    }).join("");
+    if (ul) {
+      ul.innerHTML = needs.slice(0, 3).map(function (n, i) {
+        var highlight = i === 0;
+        var cls = highlight
+          ? "bg-error-container text-on-error-container"
+          : "bg-surface-container-low text-on-surface";
+        return '<li class="flex items-center gap-3 p-sm rounded-lg ' + cls + '">' +
+          '<span class="material-symbols-outlined">' + needIcon(n.nombre) + '</span>' +
+          '<span class="text-label-md font-label-md">' + escapeHtml(n.nombre) + '</span></li>';
+      }).join("");
+    }
   }
 
   function updateActions(c) {
@@ -566,4 +623,11 @@
     div.textContent = str;
     return div.innerHTML;
   }
+
+  // Cleanup Firebase listeners on page unload
+  window.addEventListener("beforeunload", function () {
+    if (window.FirebaseDataManager && centroId) {
+      FirebaseDataManager.stopListening("centro", centroId);
+    }
+  });
 })();

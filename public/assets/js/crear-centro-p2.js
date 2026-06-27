@@ -3,6 +3,12 @@
  */
 
 (function () {
+  // Check if Firebase is properly initialized
+  if (!db || !auth) {
+    console.error("Firebase not initialized in crear-centro-p2.js");
+    return;
+  }
+
   var map;
   var selectedLat = null;
   var selectedLng = null;
@@ -266,7 +272,7 @@
       contacto: formData.contacto,
       horarios: formData.horarios || {},
       organizadorId: currentUser.uid,
-      organizadorNombre: currentUser.displayName || currentUser.email.split("@")[0],
+      organizadorNombre: currentUser.displayName || (currentUser.email && currentUser.email.split("@")[0]) || "Usuario",
       creadoEn: firebase.database.ServerValue.TIMESTAMP,
       reportes: 0
     };
@@ -288,6 +294,14 @@
     var newRef = db.ref("centros").push();
     newRef.set(centroData)
       .then(function () {
+        if (typeof logAnalyticsEvent === 'function') {
+          logAnalyticsEvent("add_centro_de_acopio", {
+            nombre: centroData.nombre,
+            estado: (centroData.direccion && centroData.direccion.estado) ? centroData.direccion.estado : "Desconocido",
+            necesidades_count: centroData.necesidades ? Object.keys(centroData.necesidades).length : 0
+          });
+        }
+
         // Clear session storage
         sessionStorage.removeItem("crearCentroFormData");
         

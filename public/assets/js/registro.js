@@ -3,6 +3,17 @@
  */
 
 (function () {
+  // Check if Firebase is properly initialized
+  if (!auth || !db) {
+    console.error("Firebase not initialized in registro.js");
+    var errorDiv = document.getElementById("auth-error");
+    if (errorDiv) {
+      errorDiv.textContent = "Error al cargar Firebase. Por favor recarga la página.";
+      errorDiv.classList.remove("hidden");
+    }
+    return;
+  }
+
   var form = document.getElementById("form-registro");
   var btnGoogle = document.getElementById("btn-google");
   var btnSubmit = document.getElementById("btn-submit");
@@ -63,6 +74,9 @@
 
     auth.createUserWithEmailAndPassword(email, password)
       .then(function (cred) {
+        if (typeof logAnalyticsEvent === 'function') {
+          logAnalyticsEvent("sign_up", { method: "email" });
+        }
         return cred.user.updateProfile({ displayName: nombre })
           .then(function () {
             return cred.user.sendEmailVerification();
@@ -93,6 +107,10 @@
     var provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider)
       .then(function () {
+        if (typeof logAnalyticsEvent === 'function') {
+          logAnalyticsEvent("sign_up", { method: "google" });
+          logAnalyticsEvent("login", { method: "google" });
+        }
         // Google accounts are already verified.
         goToTarget();
       })

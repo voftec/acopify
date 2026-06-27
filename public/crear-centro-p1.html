@@ -4,6 +4,10 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
 <title>Acopify - Crear Centro de Acopio</title>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -161,7 +165,7 @@
         <h2 class="text-headline-md font-headline-md font-semibold text-on-surface">Información del Centro</h2>
         
         <div class="space-y-sm">
-          <label class="text-label-md font-label-md text-on-surface block">Nombre del centro *</label>
+          <label class="text-label-md font-label-md text-on-surface block">Nombre del centro <span class="required-asterisk">*</span></label>
           <input type="text" id="nombre" required 
             class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all"
             placeholder="Ej: Centro de Acopio San Martin">
@@ -180,7 +184,7 @@
         <h2 class="text-headline-md font-headline-md font-semibold text-on-surface">Dirección</h2>
         
         <div class="space-y-sm">
-          <label class="text-label-md font-label-md text-on-surface block">Calle / Avenida *</label>
+          <label class="text-label-md font-label-md text-on-surface block">Calle / Avenida <span class="required-asterisk">*</span></label>
           <input type="text" id="calle" required 
             class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all"
             placeholder="Ej: Av. Libertador 1234">
@@ -188,13 +192,13 @@
 
         <div class="grid grid-cols-2 gap-sm">
           <div class="space-y-sm">
-            <label class="text-label-md font-label-md text-on-surface block">Ciudad *</label>
+            <label class="text-label-md font-label-md text-on-surface block">Ciudad <span class="required-asterisk">*</span></label>
             <input type="text" id="ciudad" required 
               class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all"
               placeholder="Ej: Caracas">
           </div>
           <div class="space-y-sm">
-            <label class="text-label-md font-label-md text-on-surface block">Estado *</label>
+            <label class="text-label-md font-label-md text-on-surface block">Estado <span class="required-asterisk">*</span></label>
             <input type="text" id="estado" required 
               class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all"
               placeholder="Ej: Distrito Capital">
@@ -282,9 +286,11 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
 
 <!-- App Scripts -->
 <script src="/assets/js/firebase-init.js"></script>
+<script src="/assets/js/firebase-data-manager.js"></script>
 <script src="/assets/js/crear-centro-p1.js"></script>
 </body>
 </html>

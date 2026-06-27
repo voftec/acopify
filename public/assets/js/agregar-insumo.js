@@ -3,6 +3,12 @@
  */
 
 (function () {
+  // Check if Firebase is properly initialized
+  if (!db || !auth) {
+    console.error("Firebase not initialized in agregar-insumo.js");
+    return;
+  }
+
   var params = new URLSearchParams(window.location.search);
   var centroId = params.get("id");
 
@@ -147,6 +153,14 @@
 
     centroRef.child("necesidades/" + newKey).set(insumo)
       .then(function () {
+        if (typeof logAnalyticsEvent === 'function') {
+          logAnalyticsEvent("add_insumo", {
+            nombre: insumo.nombre,
+            categoria: insumo.categoria,
+            prioridad: insumo.prioridad || "baja",
+            centro_id: centroId
+          });
+        }
         showFeedback("Insumo guardado correctamente", false);
         if (navigator.vibrate) navigator.vibrate(50);
         setTimeout(function () {

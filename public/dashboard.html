@@ -4,6 +4,10 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>Acopify - Centros de Acopio Venezuela</title>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
 <meta name="description" content="Plataforma para localizar y coordinar centros de acopio para ayuda humanitaria en Venezuela." />
 
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -150,17 +154,17 @@
 <main class="absolute inset-0 pt-16">
   <div id="map"></div>
 
-  <!-- Floating search bar -->
-  <div id="search-floating" class="absolute top-20 left-0 right-0 px-md z-20">
+  <!-- Floating search bar (left padding leaves room for the map zoom controls) -->
+  <div id="search-floating" class="absolute top-20 left-0 right-0 pl-16 pr-md z-20">
     <div class="max-w-2xl mx-auto flex gap-sm">
       <div class="relative flex-1">
         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
         <input id="search-input" type="text" placeholder="Buscar por nombre o zona..."
           class="w-full pl-10 pr-4 py-3 rounded-full border border-outline-variant bg-surface-container-lowest shadow-md focus:ring-2 focus:ring-primary focus:border-primary text-body-md font-body-md placeholder:text-outline outline-none" />
       </div>
-      <button id="filter-btn" title="Solo con necesidades"
+      <button id="locate-btn" title="Ubicarme"
         class="p-3 bg-surface-container-lowest border border-outline-variant rounded-full shadow-md text-on-surface hover:bg-surface-container-low transition-colors flex items-center justify-center">
-        <span class="material-symbols-outlined" data-icon="tune">tune</span>
+        <span class="material-symbols-outlined" data-icon="my_location">my_location</span>
       </button>
     </div>
   </div>
@@ -194,9 +198,11 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
 
 <!-- App Scripts -->
 <script src="/assets/js/firebase-init.js"></script>
+<script src="/assets/js/firebase-data-manager.js"></script>
 <script src="/assets/js/app.js"></script>
 </body>
 </html>

@@ -3,11 +3,18 @@
  */
 
 (function () {
+  // Check if Firebase is properly initialized
+  if (!db || !auth) {
+    console.error("Firebase not initialized in app.js");
+    return;
+  }
+
   var map;
   var markers = {};
   var centrosData = {};
   var selectedId = null;
   var userLocation = null;
+  var userMarker = null;
   var onlyUrgent = false;
   var searchTerm = "";
 
@@ -18,7 +25,7 @@
   var handleEl = document.getElementById("sheet-handle");
   var sheetListEl = document.getElementById("sheet-list");
   var searchInput = document.getElementById("search-input");
-  var filterBtn = document.getElementById("filter-btn");
+  var locateBtn = document.getElementById("locate-btn");
   var tabMapa = document.getElementById("tab-mapa");
   var tabLista = document.getElementById("tab-lista");
   var avatarBtn = document.getElementById("avatar-btn");
@@ -39,8 +46,6 @@
     iconSize: [44, 44], iconAnchor: [22, 40]
   });
 
-  init();
-
   function init() {
     initMap();
     initSheet();
@@ -48,21 +53,32 @@
     listenCentros();
     tryGeolocate();
 
+    var searchTimeout = null;
     searchInput.addEventListener("input", function () {
       searchTerm = searchInput.value.trim().toLowerCase();
       renderAll();
+
+      if (searchTimeout) clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(function () {
+        if (searchTerm && typeof logAnalyticsEvent === 'function') {
+          logAnalyticsEvent("search", {
+            search_term: searchTerm
+          });
+        }
+      }, 1500);
     });
 
-    filterBtn.addEventListener("click", function () {
-      onlyUrgent = !onlyUrgent;
-      filterBtn.classList.toggle("bg-primary", onlyUrgent);
-      filterBtn.classList.toggle("text-on-primary", onlyUrgent);
-      filterBtn.classList.toggle("bg-surface-container-lowest", !onlyUrgent);
-      renderAll();
-    });
+    locateBtn.addEventListener("click", function () { locateUser(true); });
 
     tabMapa.addEventListener("click", function () { setTab("mapa"); collapseSheet(); });
     tabLista.addEventListener("click", function () { setTab("lista"); expandSheet(); });
+
+    // Cleanup Firebase listeners on page unload
+    window.addEventListener("beforeunload", function () {
+      if (window.FirebaseDataManager) {
+        FirebaseDataManager.cleanup();
+      }
+    });
   }
 
   /* ---------------- Map ---------------- */
@@ -76,8 +92,9 @@
   }
 
   function listenCentros() {
-    db.ref("centros").on("value", function (snapshot) {
-      centrosData = snapshot.val() || {};
+    // Use FirebaseDataManager for efficient caching
+    FirebaseDataManager.listenCentros(function (data) {
+      centrosData = data;
       renderMarkers();
       renderAll();
     });
@@ -205,7 +222,18 @@
     var close = document.getElementById("peek-close");
     if (close) close.addEventListener("click", function (e) { e.stopPropagation(); clearSelection(); });
     var detail = document.getElementById("peek-detail");
-    if (detail) detail.addEventListener("click", function () { window.location.href = "/centro.html?id=" + selectedId; });
+    if (detail) {
+      detail.addEventListener("click", function () {
+        if (typeof logAnalyticsEvent === 'function') {
+          logAnalyticsEvent("view_centro_details_click", {
+            centro_id: selectedId,
+            centro_nombre: centrosData[selectedId] ? centrosData[selectedId].nombre : "Desconocido",
+            source: "peek"
+          });
+        }
+        window.location.href = "/centro.html?id=" + selectedId;
+      });
+    }
   }
 
   function renderList() {
@@ -233,7 +261,15 @@
     listEl.querySelectorAll("[data-detail]").forEach(function (b) {
       b.addEventListener("click", function (e) {
         e.stopPropagation();
-        window.location.href = "/centro.html?id=" + b.getAttribute("data-detail");
+        var id = b.getAttribute("data-detail");
+        if (typeof logAnalyticsEvent === 'function') {
+          logAnalyticsEvent("view_centro_details_click", {
+            centro_id: id,
+            centro_nombre: centrosData[id] ? centrosData[id].nombre : "Desconocido",
+            source: "list"
+          });
+        }
+        window.location.href = "/centro.html?id=" + id;
       });
     });
     // Click card -> select on map
@@ -398,7 +434,7 @@
     auth.onAuthStateChanged(function (user) {
       if (user) {
         avatarBtn.href = "/mis-centros.html";
-        avatarBtn.title = user.displayName || user.email;
+        avatarBtn.title = user.displayName || user.email || "Usuario";
         if (user.photoURL) {
           avatarBtn.innerHTML = '<img src="' + user.photoURL + '" alt="" class="w-full h-full object-cover" referrerpolicy="no-referrer">';
         }
@@ -410,12 +446,32 @@
   }
 
   /* ---------------- Geolocation / distance ---------------- */
-  function tryGeolocate() {
+  // Silent geolocation on load (used to sort/show distances).
+  function tryGeolocate() { locateUser(false); }
+
+  var iconUser = L.divIcon({
+    className: "",
+    html: '<span class="material-symbols-outlined icon-filled" style="font-size:30px;color:#1d4ed8;line-height:1;">person_pin_circle</span>',
+    iconSize: [30, 30], iconAnchor: [15, 28]
+  });
+
+  // Request the user's position. When `pan` is true (button press), center the
+  // map on the user and show a loading/feedback state on the locate button.
+  function locateUser(pan) {
     if (!navigator.geolocation) return;
+    if (pan && locateBtn) locateBtn.classList.add("animate-pulse");
     navigator.geolocation.getCurrentPosition(function (pos) {
       userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      var latlng = [userLocation.lat, userLocation.lng];
+      if (userMarker) { userMarker.setLatLng(latlng); }
+      else { userMarker = L.marker(latlng, { icon: iconUser, interactive: false }).addTo(map); }
+      if (pan) { map.setView(latlng, Math.max(map.getZoom(), 14), { animate: true }); }
+      if (locateBtn) locateBtn.classList.remove("animate-pulse");
       renderAll();
-    }, function () {}, { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 });
+    }, function () {
+      if (locateBtn) locateBtn.classList.remove("animate-pulse");
+      if (pan) alert("No pudimos obtener tu ubicacion. Revisa los permisos de ubicacion del navegador.");
+    }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
   }
 
   function distanceTo(c) {
@@ -479,4 +535,7 @@
     div.textContent = str;
     return div.innerHTML;
   }
+
+  // Kick off after all module variables (e.g. COLLAPSED_Y, currentY) are initialized.
+  init();
 })();
