@@ -23,3 +23,7 @@ Thumbs.db
 
 # Tooling artifacts
 .playwright-mcp/
+
+# Source dataset for tools/build-geo-data.js (large; not deployed).
+# The generated output lives in public/assets/{js/paises-estados-data.js,data/cities}.
+countries-states-cities-database-master/

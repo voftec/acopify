@@ -8,6 +8,18 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="manifest" href="/site.webmanifest">
+<link rel="canonical" href="https://www.acopify.com/lista-recursos" />
+<meta name="description" content="Explora la lista de insumos y recursos que necesitan los centros de acopio en Venezuela." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Acopify" />
+<meta property="og:title" content="Acopify - Lista de Recursos" />
+<meta property="og:description" content="Explora la lista de insumos y recursos que necesitan los centros de acopio en Venezuela." />
+<meta property="og:url" content="https://www.acopify.com/lista-recursos" />
+<meta property="og:image" content="https://www.acopify.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:alt" content="Acopify - mapa de centros de acopio en Venezuela" />
 <link rel="stylesheet" href="/assets/css/tailwind.css" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
@@ -23,7 +35,7 @@
 <!-- TopAppBar -->
 <header class="bg-surface w-full top-0 sticky z-50 border-b border-outline-variant flex justify-between items-center px-container-margin-mobile md:px-container-margin-desktop h-16">
   <div class="flex items-center gap-4">
-    <a href="/mis-centros.html" class="hover:bg-surface-container transition-colors p-2 rounded-full flex items-center justify-center active:opacity-80">
+    <a href="/mi-centro.html" class="hover:bg-surface-container transition-colors p-2 rounded-full flex items-center justify-center active:opacity-80">
       <span class="material-symbols-outlined text-primary" data-icon="arrow_back">arrow_back</span>
     </a>
     <h1 class="font-headline-md text-headline-md text-primary font-bold">Lista de Recursos</h1>
@@ -52,7 +64,7 @@
 
   <!-- Loading State -->
   <div id="loading-state" class="flex flex-col items-center justify-center py-xl">
-    <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary-container border-t-transparent mb-4"></div>
+    <img src="/favicon.svg" alt="Cargando" class="w-12 h-12 animate-spin mb-4" />
     <p class="text-body-md text-on-surface-variant">Cargando lista de recursos...</p>
   </div>
 
@@ -89,5 +101,6 @@
 <script src="/assets/js/auth.js"></script>
 <script src="/assets/js/recursos-categorias.js"></script>
 <script src="/assets/js/lista-recursos.js"></script>
+<script src="/assets/js/bottom-nav.js"></script>
 </body>
 </html>

@@ -15,8 +15,52 @@
   var selectedId = null;
   var userLocation = null;
   var userMarker = null;
-  var onlyUrgent = false;
   var searchTerm = "";
+  var activeRadius = null;    // km number or null (no limit)
+  var filterEstado = "";
+  var filterPanelOpen = false;
+  var geoClickAsked = false; // only ask once per session via map click
+
+  // Persisted view state so returning from a center's detail page restores the
+  // last map/list view instead of dropping the user back on onboarding.
+  var STATE_KEY = "acopify:mapaState";
+  var savedState = readSavedState();
+  var stateApplied = false;
+
+  function readSavedState() {
+    try { return JSON.parse(sessionStorage.getItem(STATE_KEY) || "null"); }
+    catch (e) { return null; }
+  }
+
+  function saveState() {
+    try {
+      var c = map ? map.getCenter() : null;
+      sessionStorage.setItem(STATE_KEY, JSON.stringify({
+        search: searchInput ? searchInput.value : "",
+        activeRadius: activeRadius,
+        filterEstado: filterEstado,
+        selectedId: selectedId,
+        expanded: isExpanded(),
+        scroll: sheetListEl ? sheetListEl.scrollTop : 0,
+        map: c ? { lat: c.lat, lng: c.lng, zoom: map.getZoom() } : null
+      }));
+    } catch (e) {}
+  }
+
+  // Restore selection / list scroll once the first batch of centers has loaded.
+  function applySavedState() {
+    if (stateApplied) return;
+    stateApplied = true;
+    if (!savedState) return;
+    if (savedState.selectedId && centrosData[savedState.selectedId]) {
+      // panTo=false: keep the saved map center/zoom restored in initMap().
+      selectCentro(savedState.selectedId, false);
+    } else if (savedState.expanded) {
+      setTab("lista");
+      expandSheet();
+      if (sheetListEl && savedState.scroll) sheetListEl.scrollTop = savedState.scroll;
+    }
+  }
 
   // DOM
   var listEl = document.getElementById("centros-list");
@@ -47,6 +91,16 @@
   });
 
   function init() {
+    // Restore the saved search/filter before the first render so the list and
+    // markers come back filtered exactly as the user left them.
+    if (savedState) {
+      activeRadius = (savedState.activeRadius !== undefined && savedState.activeRadius !== null)
+        ? savedState.activeRadius : null;
+      filterEstado = savedState.filterEstado || "";
+      if (searchInput) searchInput.value = savedState.search || "";
+      searchTerm = (savedState.search || "").trim().toLowerCase();
+    }
+
     initMap();
     initSheet();
     initAuthAvatar();
@@ -70,11 +124,28 @@
 
     locateBtn.addEventListener("click", function () { locateUser(true); });
 
+    var filterBtn = document.getElementById("filter-btn");
+    if (filterBtn) {
+      filterBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        if (filterPanelOpen) closeFilterPanel(); else openFilterPanel();
+      });
+    }
+    document.addEventListener("click", function (e) {
+      if (!filterPanelOpen) return;
+      var panel = document.getElementById("filter-panel");
+      var btn   = document.getElementById("filter-btn");
+      if (panel && !panel.contains(e.target) && btn && !btn.contains(e.target)) {
+        closeFilterPanel();
+      }
+    });
+
     tabMapa.addEventListener("click", function () { setTab("mapa"); collapseSheet(); });
     tabLista.addEventListener("click", function () { setTab("lista"); expandSheet(); });
 
-    // Cleanup Firebase listeners on page unload
+    // Cleanup Firebase listeners on page unload, persisting the current view.
     window.addEventListener("beforeunload", function () {
+      saveState();
       if (window.FirebaseDataManager) {
         FirebaseDataManager.cleanup();
       }
@@ -83,12 +154,25 @@
 
   /* ---------------- Map ---------------- */
   function initMap() {
-    map = L.map("map", { zoomControl: true }).setView(VZ_CENTER, VZ_ZOOM);
+    var center = VZ_CENTER, zoom = VZ_ZOOM;
+    if (savedState && savedState.map) {
+      center = [savedState.map.lat, savedState.map.lng];
+      zoom = savedState.map.zoom;
+    }
+    map = L.map("map", { zoomControl: true }).setView(center, zoom);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       maxZoom: 19
     }).addTo(map);
-    map.on("click", function () { clearSelection(); });
+    map.on("click", function () {
+      clearSelection();
+      // On the first map tap when location is unknown, ask for it so the list
+      // can be sorted by distance and the user marker appears.
+      if (!userLocation && !geoClickAsked) {
+        geoClickAsked = true;
+        locateUser(true);
+      }
+    });
   }
 
   function listenCentros() {
@@ -97,6 +181,7 @@
       centrosData = data;
       renderMarkers();
       renderAll();
+      applySavedState();
     });
   }
 
@@ -149,12 +234,17 @@
   function renderAll() {
     renderPeek();
     renderList();
+    updateFilterBadge();
+    if (filterPanelOpen) buildFilterPanel();
   }
 
   function getFilteredIds() {
     var ids = Object.keys(centrosData).filter(function (id) {
       var c = centrosData[id];
-      if (onlyUrgent && needsCount(c) === 0) return false;
+      if (activeRadius !== null) {
+        if (!userLocation || distanceTo(c) > activeRadius) return false;
+      }
+      if (filterEstado && (c.direccion && c.direccion.estado || "") !== filterEstado) return false;
       if (searchTerm) {
         var hay = (c.nombre || "") + " " + buildAddressString(c.direccion);
         if (hay.toLowerCase().indexOf(searchTerm) === -1) return false;
@@ -177,19 +267,34 @@
       wirePeek();
     } else {
       var total = Object.keys(centrosData).length;
+      var totalLabel = total + (total === 1 ? ' centro de acopio registrado' : ' centros de acopio registrados');
+      var activeFCount = activeFilterCount();
+      var subtitle = activeFCount > 0
+        ? activeFCount + (activeFCount === 1 ? ' filtro activo' : ' filtros activos')
+        : (userLocation ? 'Ordenados por cercanía a tu ubicación' : 'Desliza hacia arriba para ver la lista');
       peekEl.innerHTML =
         '<div class="flex items-center justify-between gap-sm py-1">' +
         '<div class="flex items-center gap-sm">' +
         '<span class="material-symbols-outlined text-primary icon-filled">pin_drop</span>' +
         '<div>' +
-        '<p class="font-bold text-on-surface leading-tight">' + total + ' centros activos</p>' +
-        '<p class="text-label-md text-on-surface-variant">Desliza hacia arriba para ver la lista</p>' +
+        '<p class="font-bold text-on-surface leading-tight">' + totalLabel + '</p>' +
+        '<p class="text-label-md text-on-surface-variant">' + subtitle + '</p>' +
         '</div></div>' +
-        '<button id="peek-expand" class="text-primary"><span class="material-symbols-outlined">expand_less</span></button>' +
+        '<button id="peek-expand" class="text-primary"><span id="peek-expand-icon" class="material-symbols-outlined transition-transform duration-300">expand_less</span></button>' +
         '</div>';
       var be = document.getElementById("peek-expand");
-      if (be) be.addEventListener("click", function () { setTab("lista"); expandSheet(); });
+      if (be) be.addEventListener("click", function () {
+        if (isExpanded()) { setTab("mapa"); collapseSheet(); }
+        else { setTab("lista"); expandSheet(); }
+      });
+      updateExpandIcon();
     }
+  }
+
+  // Rotate the peek chevron to point down when the sheet is expanded.
+  function updateExpandIcon() {
+    var icon = document.getElementById("peek-expand-icon");
+    if (icon) icon.style.transform = isExpanded() ? "rotate(180deg)" : "rotate(0deg)";
   }
 
   function buildPeekCard(id, c) {
@@ -231,6 +336,7 @@
             source: "peek"
           });
         }
+        saveState();
         window.location.href = "/centro.html?id=" + selectedId;
       });
     }
@@ -269,6 +375,7 @@
             source: "list"
           });
         }
+        saveState();
         window.location.href = "/centro.html?id=" + id;
       });
     });
@@ -339,8 +446,17 @@
   }
   function isExpanded() { return currentY < COLLAPSED_Y / 2; }
 
+  // Fixed top header (h-16 = 64px) and the bottom offset the sheet already
+  // clears (bottom: 64px for the bottom nav). The expanded sheet must stop
+  // just below the header so its content isn't hidden behind it.
+  var HEADER_H = 64;
+  var SHEET_BOTTOM = 64;
+  var TOP_GAP = 8; // small breathing room below the header
+
   function computeBounds() {
-    var sheetH = Math.round(window.innerHeight * 0.9);
+    // Use the full viewport minus the fixed chrome so the expanded sheet fills
+    // exactly the space between the header and the bottom nav on any screen.
+    var sheetH = Math.max(window.innerHeight - HEADER_H - SHEET_BOTTOM - TOP_GAP, 0);
     sheetEl.style.height = sheetH + "px";
     var peek = peekHeight();
     sheetListEl.style.maxHeight = (sheetH - peek) + "px";
@@ -358,6 +474,7 @@
     currentY = Math.min(Math.max(y, 0), COLLAPSED_Y);
     sheetEl.classList.toggle("animate", !!animate);
     sheetEl.style.transform = "translateY(" + currentY + "px)";
+    updateExpandIcon();
   }
 
   function collapseSheet() { setTranslate(COLLAPSED_Y, true); setTab("mapa"); }
@@ -404,8 +521,14 @@
     dragging = false;
     document.removeEventListener("pointermove", onMove);
     document.removeEventListener("pointerup", onUp);
-    // snap to nearest
-    if (currentY < COLLAPSED_Y / 2) { expandSheet(); setTab("lista"); }
+
+    // Commit on a small intentional drag (a few inches) in either direction;
+    // movedUp > 0 means the user pulled the sheet up.
+    var COMMIT = 56;
+    var movedUp = startTransform - currentY;
+    if (movedUp > COMMIT) { expandSheet(); setTab("lista"); }
+    else if (-movedUp > COMMIT) { collapseSheet(); }
+    else if (currentY < COLLAPSED_Y / 2) { expandSheet(); setTab("lista"); }
     else { collapseSheet(); }
   }
 
@@ -430,10 +553,10 @@
 
   /* ---------------- Auth avatar ---------------- */
   function initAuthAvatar() {
-    if (typeof auth === "undefined") return;
+    if (typeof auth === "undefined" || !avatarBtn) return;
     auth.onAuthStateChanged(function (user) {
       if (user) {
-        avatarBtn.href = "/mis-centros.html";
+        avatarBtn.href = "/mi-centro.html";
         avatarBtn.title = user.displayName || user.email || "Usuario";
         if (user.photoURL) {
           avatarBtn.innerHTML = '<img src="' + user.photoURL + '" alt="" class="w-full h-full object-cover" referrerpolicy="no-referrer">';
@@ -443,6 +566,151 @@
         avatarBtn.title = "Iniciar sesion";
       }
     });
+  }
+
+  /* ---------------- Filter panel ---------------- */
+
+  function activeFilterCount() {
+    return (activeRadius !== null ? 1 : 0) + (filterEstado ? 1 : 0);
+  }
+
+  function updateFilterBadge() {
+    var badge = document.getElementById("filter-badge");
+    var btn   = document.getElementById("filter-btn");
+    var count = activeFilterCount();
+    if (badge) {
+      badge.textContent = count;
+      badge.classList.toggle("hidden", count === 0);
+    }
+    if (btn) btn.classList.toggle("text-primary", count > 0 || filterPanelOpen);
+  }
+
+  function buildFilterPanel() {
+    var panelEl = document.getElementById("filter-panel");
+    if (!panelEl) return;
+
+    // Collect unique estados that actually have registered centers
+    var estados = [];
+    Object.values(centrosData).forEach(function (c) {
+      var e = c.direccion && c.direccion.estado;
+      if (e && !estados.includes(e)) estados.push(e);
+    });
+    estados.sort(function (a, b) { return a.localeCompare(b, "es"); });
+
+    // Slider position: 250 encodes "no limit"
+    var sliderVal   = activeRadius !== null ? activeRadius : 250;
+    var sliderLabel = sliderVal < 250 ? sliderVal + " km" : "Sin límite";
+    var hasFilters  = activeFilterCount() > 0;
+
+    var h = "";
+
+    // ---- Header ----
+    h += '<div class="flex items-center justify-between px-4 pt-3 pb-2 border-b border-outline-variant">'
+       + '<div class="flex items-center gap-2">'
+       + '<span class="material-symbols-outlined text-[18px] text-on-surface-variant">tune</span>'
+       + '<span class="text-label-md font-semibold text-on-surface">Filtros</span>'
+       + '</div>'
+       + '<button id="fp-close" class="text-on-surface-variant p-1 rounded-full hover:bg-surface-container-low">'
+       + '<span class="material-symbols-outlined text-[18px]">close</span></button>'
+       + '</div>';
+
+    // ---- Estado ----
+    h += '<div class="px-4 py-3 border-b border-outline-variant">'
+       + '<p class="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider mb-2">Estado</p>'
+       + '<select id="fp-estado" class="w-full px-3 py-2 text-sm bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-1 focus:ring-primary">'
+       + '<option value="">Todos los estados</option>';
+    estados.forEach(function (e) {
+      h += '<option value="' + escapeHtml(e) + '"' + (filterEstado === e ? " selected" : "") + '>' + escapeHtml(e) + '</option>';
+    });
+    h += '</select></div>';
+
+    // ---- Distance slider ----
+    h += '<div class="px-4 py-3 ' + (hasFilters ? "border-b border-outline-variant" : "") + '">'
+       + '<div class="flex items-center justify-between mb-3">'
+       + '<p class="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider">Distancia máxima</p>'
+       + '<span id="fp-radius-label" class="text-sm font-semibold ' + (sliderVal < 250 ? "text-primary" : "text-on-surface-variant") + '">' + sliderLabel + '</span>'
+       + '</div>';
+
+    if (!userLocation) {
+      h += '<div class="flex items-center justify-between gap-3">'
+         + '<div class="flex items-center gap-2 text-on-surface-variant text-sm">'
+         + '<span class="material-symbols-outlined text-[16px]">location_off</span>'
+         + '<span>Activa tu ubicación</span>'
+         + '</div>'
+         + '<button id="fp-activate-loc" class="text-sm font-medium text-primary shrink-0">Activar</button>'
+         + '</div>';
+    } else {
+      h += '<input type="range" id="fp-slider" min="1" max="250" value="' + sliderVal + '"'
+         + ' class="w-full cursor-pointer" style="accent-color:var(--color-primary,#1A6BD6)">'
+         + '<div class="flex justify-between text-[10px] text-on-surface-variant mt-1.5">'
+         + '<span>1 km</span><span>Sin límite</span></div>';
+    }
+    h += '</div>';
+
+    // ---- Clear ----
+    if (hasFilters) {
+      h += '<div class="px-4 pb-3">'
+         + '<button id="fp-clear" class="w-full py-2 text-sm font-medium text-error border border-error rounded-xl hover:bg-error-container transition-colors">'
+         + 'Limpiar filtros</button></div>';
+    }
+
+    panelEl.innerHTML = h;
+
+    // Wire: close
+    var closeBtn = document.getElementById("fp-close");
+    if (closeBtn) closeBtn.addEventListener("click", closeFilterPanel);
+
+    // Wire: estado select
+    var estadoSel = document.getElementById("fp-estado");
+    if (estadoSel) estadoSel.addEventListener("change", function () {
+      filterEstado = estadoSel.value;
+      buildFilterPanel(); updateFilterBadge(); renderAll();
+    });
+
+    // Wire: distance slider
+    var slider  = document.getElementById("fp-slider");
+    var labelEl = document.getElementById("fp-radius-label");
+    if (slider && labelEl) {
+      var sliderTid = null;
+      function applySlider() {
+        var v = parseInt(slider.value, 10);
+        activeRadius = v < 250 ? v : null;
+        updateFilterBadge(); renderAll();
+      }
+      slider.addEventListener("input", function () {
+        var v = parseInt(slider.value, 10);
+        labelEl.textContent = v < 250 ? v + " km" : "Sin límite";
+        labelEl.className   = "text-sm font-semibold " + (v < 250 ? "text-primary" : "text-on-surface-variant");
+        clearTimeout(sliderTid);
+        sliderTid = setTimeout(applySlider, 80);
+      });
+      slider.addEventListener("change", function () { clearTimeout(sliderTid); applySlider(); });
+    }
+
+    // Wire: activate location button (when no GPS yet)
+    var locBtn = document.getElementById("fp-activate-loc");
+    if (locBtn) locBtn.addEventListener("click", function () { locateUser(true); closeFilterPanel(); });
+
+    // Wire: clear
+    var clearBtn = document.getElementById("fp-clear");
+    if (clearBtn) clearBtn.addEventListener("click", function () {
+      activeRadius = null; filterEstado = "";
+      buildFilterPanel(); updateFilterBadge(); renderAll();
+    });
+  }
+
+  function openFilterPanel() {
+    filterPanelOpen = true;
+    var panel = document.getElementById("filter-panel");
+    if (panel) { buildFilterPanel(); panel.classList.remove("hidden"); }
+    updateFilterBadge();
+  }
+
+  function closeFilterPanel() {
+    filterPanelOpen = false;
+    var panel = document.getElementById("filter-panel");
+    if (panel) panel.classList.add("hidden");
+    updateFilterBadge();
   }
 
   /* ---------------- Geolocation / distance ---------------- */
@@ -461,11 +729,14 @@
     if (!navigator.geolocation) return;
     if (pan && locateBtn) locateBtn.classList.add("animate-pulse");
     navigator.geolocation.getCurrentPosition(function (pos) {
+      geoClickAsked = true; // location obtained – no need to ask via map click
       userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       var latlng = [userLocation.lat, userLocation.lng];
       if (userMarker) { userMarker.setLatLng(latlng); }
       else { userMarker = L.marker(latlng, { icon: iconUser, interactive: false }).addTo(map); }
-      if (pan) { map.setView(latlng, Math.max(map.getZoom(), 14), { animate: true }); }
+      // flyTo works reliably for any distance (near or far) without the
+      // silent-failure issue that setView has for large animated pans.
+      if (pan) { map.flyTo(latlng, 14, { duration: 1 }); }
       if (locateBtn) locateBtn.classList.remove("animate-pulse");
       renderAll();
     }, function () {

@@ -24,15 +24,15 @@
   var selectedPrioridad = null;
   var centroRef = centroId ? db.ref("centros/" + centroId) : null;
 
-  var backUrl = centroId ? "/lista-recursos.html?id=" + centroId : "/mis-centros.html";
+  var backUrl = centroId ? "/lista-recursos.html?id=" + centroId : "/mi-centro.html";
 
   if (!centroId) {
     alert("No se encontró el centro. Vuelve a la lista de centros.");
-    window.location.href = "/mis-centros.html";
+    window.location.href = "/mi-centro.html";
     return;
   }
 
-  // Verificar permisos: solo el organizador puede agregar insumos.
+  // Verificar permisos: el organizador y los colaboradores pueden agregar insumos.
   auth.onAuthStateChanged(function (user) {
     if (!user) {
       alert("Debes iniciar sesión para agregar insumos.");
@@ -43,10 +43,12 @@
       var centro = snapshot.val();
       if (!centro) {
         alert("Este centro no existe o fue eliminado.");
-        window.location.href = "/mis-centros.html";
+        window.location.href = "/mi-centro.html";
         return;
       }
-      if (centro.organizadorId !== user.uid) {
+      var isOwner = centro.organizadorId === user.uid;
+      var isCollaborator = !!(centro.colaboradores && centro.colaboradores[user.uid]);
+      if (!isOwner && !isCollaborator) {
         alert("No tienes permiso para gestionar este centro.");
         window.location.href = "/lista-recursos.html?id=" + centroId;
       }

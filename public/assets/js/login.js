@@ -25,7 +25,7 @@
 
   // Where to send the user after a successful, verified login.
   function getRedirectTarget() {
-    return sessionStorage.getItem("postLoginRedirect") || "/mis-centros.html";
+    return sessionStorage.getItem("postLoginRedirect") || "/mi-centro.html";
   }
 
   function goToTarget() {
@@ -40,6 +40,20 @@
     sessionStorage.removeItem("authInfo");
     showInfo(handoffInfo);
   }
+
+  // Complete a redirect-based Google sign-in if we fell back to one earlier.
+  auth.getRedirectResult()
+    .then(function (result) {
+      if (result && result.user) {
+        if (typeof logAnalyticsEvent === 'function') {
+          logAnalyticsEvent("login", { method: "google" });
+        }
+        goToTarget();
+      }
+    })
+    .catch(function (error) {
+      showError(translateError(error.code));
+    });
 
   auth.onAuthStateChanged(function (user) {
     // If a verified user (or a Google user) is already signed in, continue.
@@ -76,7 +90,7 @@
             .then(function () {
               showInfo(
                 "Tu cuenta aun no esta verificada. Te reenviamos el correo de confirmacion a " +
-                email + ". Revisa tu bandeja de entrada."
+                email + ". Revisa tu bandeja de entrada y tambien tu carpeta de spam o correo no deseado."
               );
               btnSubmit.disabled = false;
             });
@@ -91,18 +105,20 @@
 
   btnGoogle.addEventListener("click", function () {
     hideMessages();
-    var provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider)
-      .then(function () {
+    // Uses a popup on desktop and a full-page redirect on mobile (where popups
+    // are unreliable). The redirect path resolves via getRedirectResult above.
+    window.acopifyGoogleSignIn(
+      function () {
         if (typeof logAnalyticsEvent === 'function') {
           logAnalyticsEvent("login", { method: "google" });
         }
         // Google accounts are already verified.
         goToTarget();
-      })
-      .catch(function (error) {
-        showError(translateError(error.code));
-      });
+      },
+      function (code) {
+        showError(translateError(code));
+      }
+    );
   });
 
   function showError(msg) {
@@ -132,7 +148,9 @@
       "auth/popup-closed-by-user": "Se cerro la ventana de inicio de sesion.",
       "auth/invalid-credential": "Credenciales invalidas. Verifica tu correo y contrasena.",
       "auth/missing-email": "Ingresa tu correo electronico.",
-      "auth/user-disabled": "Esta cuenta ha sido deshabilitada."
+      "auth/user-disabled": "Esta cuenta ha sido deshabilitada.",
+      "auth/unauthorized-domain": "Este dominio no esta autorizado para iniciar sesion con Google.",
+      "auth/account-exists-with-different-credential": "Ya existe una cuenta con este correo usando otro metodo de inicio de sesion."
     };
     return errors[code] || "Error de autenticacion. Intenta de nuevo.";
   }

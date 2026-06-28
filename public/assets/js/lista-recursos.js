@@ -25,7 +25,7 @@
     content.classList.remove("hidden");
     listEl.innerHTML =
       '<p class="text-body-md text-on-surface-variant text-center py-lg">Centro no encontrado. ' +
-      '<a href="/mis-centros.html" class="text-primary font-semibold underline">Volver a mis centros</a>.</p>';
+      '<a href="/mi-centro.html" class="text-primary font-semibold underline">Volver a mi centro</a>.</p>';
     return;
   }
 
@@ -57,7 +57,9 @@
         return;
       }
 
-      isOwner = centro.organizadorId === user.uid;
+      // El organizador y los colaboradores confirmados pueden gestionar recursos.
+      var isCollaborator = !!(centro.colaboradores && centro.colaboradores[user.uid]);
+      isOwner = centro.organizadorId === user.uid || isCollaborator;
       content.classList.remove("hidden");
       nombreEl.textContent = centro.nombre || "Lista de recursos necesarios";
 

@@ -49,7 +49,7 @@ acopify/
 │           ├── registro.js       # Formulario de registro
 │           ├── centro.js         # Detalle + reportes
 │           ├── mis-centros.js    # Dashboard
-│           └── editar.js         # Editar centro + necesidades
+│           └── crear-centro-p1.js # Crear y editar centro (vista compartida)
 ├── firebase.json               # Configuracion Firebase Hosting
 ├── .firebaserc                 # Alias del proyecto
 ├── rtdb.rules.json             # Reglas de seguridad RTDB

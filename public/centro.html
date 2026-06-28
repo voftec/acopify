@@ -3,11 +3,23 @@
 <head>
 <meta charset="utf-8" />
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport" />
-<title>Detalle del Centro - Acopify</title>
+<title>Acopify - Detalle del Centro</title>
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="manifest" href="/site.webmanifest">
+<link rel="canonical" href="https://www.acopify.com/centro" />
+<meta name="description" content="Consulta la información de un centro de acopio: ubicación, insumos que necesita y datos de contacto." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Acopify" />
+<meta property="og:title" content="Acopify - Detalle del Centro" />
+<meta property="og:description" content="Consulta la información de un centro de acopio: ubicación, insumos que necesita y datos de contacto." />
+<meta property="og:url" content="https://www.acopify.com/centro" />
+<meta property="og:image" content="https://www.acopify.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:alt" content="Acopify - mapa de centros de acopio en Venezuela" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
@@ -23,6 +35,10 @@
   .icon-filled { font-variation-settings: 'FILL' 1; }
   body { font-family: 'Inter', sans-serif; }
   .crisis-card-border { border-left-width: 4px; }
+  /* Keep Leaflet tiles from being resized by the Tailwind preflight img reset
+     (prevents gray seams/grid lines between tiles). */
+  .leaflet-container img { max-width: none !important; }
+  .leaflet-tile { width: 256px !important; height: 256px !important; }
 </style>
 </head>
 <body class="bg-surface text-on-surface min-h-screen pb-10">
@@ -30,17 +46,16 @@
 <!-- TopAppBar -->
 <header class="bg-surface sticky top-0 z-50 flex justify-between items-center w-full px-md h-16 border-b border-outline-variant shadow-sm">
   <div class="flex items-center gap-4">
-    <a href="/" aria-label="Volver" class="hover:bg-surface-container-low transition-colors p-2 rounded-full active:scale-95 duration-100">
+    <a href="/mapa.html" aria-label="Volver" class="hover:bg-surface-container-low transition-colors p-2 rounded-full active:scale-95 duration-100">
       <span class="material-symbols-outlined text-primary">arrow_back</span>
     </a>
     <h1 class="text-headline-lg-mobile font-headline-lg-mobile font-bold text-primary">Acopify</h1>
   </div>
-  <a href="/login.html" id="nav-login" class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant hover:text-primary transition-colors">Iniciar sesión</a>
 </header>
 
-<main id="centro-content" class="max-w-4xl mx-auto px-gutter py-lg">
+<main id="centro-content" class="max-w-4xl mx-auto px-gutter py-md md:py-lg">
   <div class="flex items-center justify-center gap-3 py-20 text-on-surface-variant">
-    <span class="material-symbols-outlined animate-spin">progress_activity</span> Cargando...
+    <img src="/favicon.svg" alt="Cargando" class="w-6 h-6 animate-spin" /> Cargando...
   </div>
 </main>
 
@@ -60,24 +75,6 @@
   </div>
 </div>
 
-<!-- Report modal -->
-<div class="fixed inset-0 z-[2000] hidden items-end md:items-center justify-center bg-black/40 backdrop-blur-sm p-0 md:p-4" id="modal-reportar">
-  <div class="bg-surface-container-lowest w-full md:max-w-md rounded-t-full md:rounded-full p-lg shadow-xl">
-    <h2 class="text-headline-md font-headline-md text-on-background mb-xs">Reportar centro</h2>
-    <p class="text-body-md text-on-surface-variant mb-md">Si este centro tiene información incorrecta o sospechosa, envíanos un reporte.</p>
-    <label class="text-label-md font-label-md text-on-surface-variant block mb-xs" for="motivo-reporte">Motivo del reporte</label>
-    <textarea class="w-full rounded-xl border border-outline-variant bg-surface p-sm text-body-md focus:border-primary focus:ring-primary mb-md" id="motivo-reporte" rows="3" placeholder="Describe el problema..."></textarea>
-    <div class="flex justify-end gap-sm">
-      <button class="px-4 py-2 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low active:scale-95 transition-all" id="btn-cancel-report">Cancelar</button>
-      <button class="px-4 py-2 rounded-lg font-label-md text-label-md bg-tertiary-container text-on-tertiary hover:opacity-90 active:scale-95 transition-all" id="btn-send-report">Enviar reporte</button>
-    </div>
-  </div>
-</div>
-
-<footer class="text-center text-status-sm font-status-sm text-outline py-lg">
-  &copy; 2026 Acopify &mdash; Código abierto (MIT)
-</footer>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -86,6 +83,8 @@
 <script src="/assets/js/firebase-init.js"></script>
 <script src="/assets/js/firebase-data-manager.js"></script>
 <script src="/assets/js/auth.js"></script>
-<script src="/assets/js/centro.js"></script>
+<script src="/assets/js/centro.js?v=2"></script>
+<script src="/assets/js/compartir-historia.js"></script>
+<script src="/assets/js/bottom-nav.js"></script>
 </body>
 </html>

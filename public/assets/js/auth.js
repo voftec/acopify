@@ -21,7 +21,7 @@ function updateNavAuth(user) {
   if (user) {
     var displayName = user.displayName || (user.email && user.email.split("@")[0]) || "Usuario";
     navActions.innerHTML =
-      '<a href="/mis-centros.html" class="nav-link">Mis centros</a>' +
+      '<a href="/mi-centro.html" class="nav-link">Mi centro</a>' +
       '<a href="/crear-centro-p1.html" class="nav-link">+ Registrar</a>' +
       '<span class="nav-user">' + escapeHtml(displayName) + '</span>' +
       '<a href="#" class="nav-link" id="btn-logout">Salir</a>';

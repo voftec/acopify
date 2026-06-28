@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" name="viewport" />
+<title>Acopify - Inicio</title>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="canonical" href="https://www.acopify.com/inicio" />
+<meta name="description" content="Acopify conecta donantes con centros de acopio para la ayuda humanitaria tras el terremoto en Venezuela. Empieza aquí." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Acopify" />
+<meta property="og:title" content="Acopify - Inicio" />
+<meta property="og:description" content="Acopify conecta donantes con centros de acopio para la ayuda humanitaria tras el terremoto en Venezuela. Empieza aquí." />
+<meta property="og:url" content="https://www.acopify.com/inicio" />
+<meta property="og:image" content="https://www.acopify.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:alt" content="Acopify - mapa de centros de acopio en Venezuela" />
+<link rel="stylesheet" href="/assets/css/tailwind.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+<style>
+  body {
+    background-color: #f8f9ff;
+  }
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  .active-location-card {
+    border-color: #004ac6 !important;
+    background-color: #eff4ff !important;
+  }
+  .hero-img {
+    background-image:
+      linear-gradient(to bottom, rgba(0,28,70,0.45) 0%, rgba(0,18,52,0.80) 70%, rgba(0,15,45,0.92) 100%),
+      url('https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=1600&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+  }
+  @keyframes count-pop { 0% { transform: scale(1.12); } 100% { transform: scale(1); } }
+  .count-pop { animation: count-pop 0.35s ease-out; }
+
+  /* Dynamic viewport handling */
+  @media (orientation: portrait) {
+    .hero-img {
+      background-position: center 30%;
+    }
+  }
+  @media (orientation: landscape) {
+    .hero-img {
+      background-position: center center;
+      min-height: 280px !important;
+    }
+    body {
+      min-height: 100vh;
+    }
+  }
+  @media (max-height: 500px) {
+    .hero-img {
+      min-height: 220px !important;
+      padding-top: 0.75rem !important;
+      padding-bottom: 0.75rem !important;
+    }
+    .hero-img h2 {
+      font-size: 32px !important;
+      line-height: 36px !important;
+    }
+  }
+  @media (min-width: 1536px) {
+    .hero-img {
+      min-height: 520px;
+    }
+  }
+</style>
+</head>
+<body class="min-h-screen flex flex-col font-body-md text-on-surface">
+
+<!-- App Screen -->
+<div class="w-full max-w-5xl mx-auto bg-surface flex flex-col flex-grow min-h-screen md:px-6 lg:px-8 xl:px-12">
+
+  <!-- TopAppBar -->
+  <header class="flex justify-between items-center w-full px-md md:px-8 lg:px-10 h-16 flex-shrink-0">
+    <div class="flex items-center gap-sm">
+      <span class="material-symbols-outlined text-primary" data-icon="emergency">emergency</span>
+      <h1 class="text-headline-lg-mobile font-headline-lg-mobile font-bold text-primary">Acopify</h1>
+    </div>
+  </header>
+
+  <!-- Hero (shared across steps) -->
+  <section class="hero-img px-md md:px-8 lg:px-10 pt-xl md:pt-10 lg:pt-12 pb-xl md:pb-10 lg:pb-12 flex-shrink-0 min-h-[320px] md:min-h-[380px] lg:min-h-[440px]">
+    <div class="max-w-4xl mx-auto md:px-4">
+      <!-- Live stat pill (supporting social proof) -->
+      <div class="flex items-center justify-center gap-3 pl-4 pr-5 py-2.5 rounded-full bg-white/15 border border-white/25 backdrop-blur-sm mb-lg md:mb-xl mx-auto w-fit">
+        <span class="relative flex h-3 w-3">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-green-400"></span>
+        </span>
+        <span class="text-white text-[15px] md:text-[16px] font-bold tracking-wide"><span id="centros-count">—</span> <span id="centros-label">centros de acopio registrados</span></span>
+      </div>
+
+      <h2 class="font-display-lg text-[36px] md:text-[48px] lg:text-[52px] leading-[40px] md:leading-[52px] lg:leading-[56px] font-extrabold tracking-[-0.02em] text-white mb-lg md:mb-xl lg:mb-2xl drop-shadow-sm">Encuentra dónde y qué donar</h2>
+      <p class="font-body-md text-body-md text-white/85 max-w-[95%] md:text-lg lg:text-xl md:leading-relaxed lg:leading-relaxed">Acopify centraliza las necesidades de los centros de acopio para que tu ayuda llegue exactamente a donde se necesita.</p>
+    </div>
+  </section>
+
+  <!-- Content (both sections visible) -->
+  <main class="flex-grow flex flex-col px-md md:px-8 lg:px-10 pt-sm md:pt-4 lg:pt-4">
+
+    <div class="max-w-4xl mx-auto w-full space-y-md">
+      <!-- STEP 1: Ubicación -->
+      <div id="step-1" class="flex flex-col">
+        <div class="flex items-center gap-sm mb-sm">
+          <span class="w-6 h-1 rounded-full bg-primary"></span>
+          <h3 class="font-headline-md text-[20px] font-bold text-on-surface">¿En donde te encuentras?</h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-sm">
+          <button class="location-card group flex items-center gap-md p-sm bg-surface border border-outline-variant rounded-xl transition-all duration-200 hover:border-primary cursor-pointer" onclick="selectLocation('venezuela', this)">
+            <span class="material-symbols-outlined text-primary text-[24px]" style="font-variation-settings:'FILL' 1;">location_on</span>
+            <span class="flex-grow text-left font-body-lg text-[17px] font-semibold text-on-surface">Venezuela</span>
+            <span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+          </button>
+          <button class="location-card group flex items-center gap-md p-sm bg-surface border border-outline-variant rounded-xl transition-all duration-200 hover:border-primary cursor-pointer" onclick="selectLocation('otros', this)">
+            <span class="material-symbols-outlined text-on-surface-variant text-[24px]">public</span>
+            <span class="flex-grow text-left font-body-lg text-[17px] font-semibold text-on-surface">Otros países</span>
+            <span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 2: Rol (initially disabled/greyed) -->
+      <div id="step-2" class="flex flex-col opacity-50 pointer-events-none transition-opacity duration-300">
+        <div class="flex items-center gap-sm mb-sm">
+          <span class="w-6 h-1 rounded-full bg-outline-variant" id="role-indicator"></span>
+          <h3 class="font-headline-md text-[20px] font-bold text-on-surface-variant" id="role-heading">¿Qué rol tienes?</h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-sm">
+          <button class="role-card flex items-center gap-md p-sm bg-surface border border-outline-variant rounded-xl transition-all duration-200 cursor-not-allowed" onclick="selectRole('donador', this)">
+            <span class="material-symbols-outlined text-on-surface-variant text-[26px]" id="donor-icon">volunteer_activism</span>
+            <div class="flex flex-col text-left">
+              <span class="font-body-lg text-[17px] font-bold text-on-surface-variant" id="donor-title">Donador</span>
+              <span class="font-body-md text-[14px] text-on-surface-variant">Quiero ayudar</span>
+            </div>
+          </button>
+          <button class="role-card flex items-center gap-md p-sm bg-surface border border-outline-variant rounded-xl transition-all duration-200 cursor-not-allowed" onclick="selectRole('centro', this)">
+            <span class="material-symbols-outlined text-on-surface-variant text-[26px]" id="center-icon">inventory_2</span>
+            <div class="flex flex-col text-left">
+              <span class="font-body-lg text-[17px] font-bold text-on-surface-variant" id="center-title">Centro de acopio</span>
+              <span class="font-body-md text-[14px] text-on-surface-variant">Recibo donaciones</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared footer actions -->
+    <div class="mt-auto pt-lg pb-md mb-20">
+      <button id="btn-continue" disabled class="w-full max-w-4xl mx-auto py-3 px-lg bg-surface-dim text-on-surface-variant rounded-xl font-body-lg text-[17px] font-bold flex items-center justify-center gap-sm transition-all duration-300 cursor-not-allowed">
+        <span id="btn-continue-label">Finalizar</span>
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Screen size detection and dynamic adjustments
+  (function () {
+    const appContainer = document.querySelector('.w-full.max-w-5xl');
+    const heroSection = document.querySelector('.hero-img');
+    const heroContent = document.querySelector('.hero-img .max-w-4xl');
+    const mainContent = document.querySelector('.max-w-4xl.mx-auto.w-full');
+    const locationCards = document.querySelector('#step-1 .grid');
+    const roleCards = document.querySelector('#step-2 .grid');
+
+    function adjustForScreenSize() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      // Small mobile (portrait)
+      if (width < 640) {
+        // Tighter layout for mobile
+        heroSection.style.minHeight = '320px';
+        heroContent.style.padding = '0';
+        if (locationCards) locationCards.style.gridTemplateColumns = '1fr';
+        if (roleCards) roleCards.style.gridTemplateColumns = '1fr';
+      }
+      // Large mobile / tablet portrait
+      else if (width >= 640 && width < 768) {
+        heroSection.style.minHeight = '340px';
+        if (locationCards) locationCards.style.gridTemplateColumns = '1fr';
+        if (roleCards) roleCards.style.gridTemplateColumns = '1fr';
+      }
+      // Tablet / small desktop
+      else if (width >= 768 && width < 1024) {
+        heroSection.style.minHeight = '380px';
+        if (locationCards) locationCards.style.gridTemplateColumns = '1fr';
+        if (roleCards) roleCards.style.gridTemplateColumns = '2fr';
+      }
+      // Desktop
+      else if (width >= 1024 && width < 1280) {
+        heroSection.style.minHeight = '440px';
+        if (locationCards) locationCards.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        if (roleCards) roleCards.style.gridTemplateColumns = 'repeat(2, 1fr)';
+      }
+      // Large desktop
+      else {
+        heroSection.style.minHeight = '480px';
+        if (locationCards) locationCards.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        if (roleCards) roleCards.style.gridTemplateColumns = 'repeat(2, 1fr)';
+      }
+
+      // Adjust for very short screens
+      if (height < 600) {
+        heroSection.style.paddingTop = '1rem';
+        heroSection.style.paddingBottom = '1rem';
+      } else {
+        heroSection.style.paddingTop = '';
+        heroSection.style.paddingBottom = '';
+      }
+
+      // Optimize hero image based on screen size
+      optimizeHeroImage(width);
+    }
+
+    function optimizeHeroImage(screenWidth) {
+      let imageUrl;
+      if (screenWidth < 640) {
+        imageUrl = 'https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=800&auto=format&fit=crop';
+      } else if (screenWidth < 1024) {
+        imageUrl = 'https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=1200&auto=format&fit=crop';
+      } else if (screenWidth < 1536) {
+        imageUrl = 'https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=1600&auto=format&fit=crop';
+      } else {
+        imageUrl = 'https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2000&auto=format&fit=crop';
+      }
+
+      // Only update if the image URL is different
+      const currentBg = heroSection.style.backgroundImage;
+      const newBg = `linear-gradient(to bottom, rgba(0,28,70,0.45) 0%, rgba(0,18,52,0.80) 70%, rgba(0,15,45,0.92) 100%), url('${imageUrl}')`;
+
+      if (!currentBg || !currentBg.includes(imageUrl)) {
+        heroSection.style.backgroundImage = newBg;
+      }
+    }
+
+    // Initial adjustment
+    adjustForScreenSize();
+
+    // Listen for resize events with debounce
+    let resizeTimeout;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(adjustForScreenSize, 150);
+    });
+  })();
+</script>
+
+<script>
+  let selectedLocation = null;
+  let selectedRole = null;
+
+  const btn = document.getElementById('btn-continue');
+  const step2 = document.getElementById('step-2');
+  const roleIndicator = document.getElementById('role-indicator');
+  const roleHeading = document.getElementById('role-heading');
+  const donorIcon = document.getElementById('donor-icon');
+  const donorTitle = document.getElementById('donor-title');
+  const centerIcon = document.getElementById('center-icon');
+  const centerTitle = document.getElementById('center-title');
+  const roleCards = document.querySelectorAll('.role-card');
+
+  function setButtonEnabled(enabled) {
+    btn.disabled = !enabled;
+    btn.classList.toggle('bg-surface-dim', !enabled);
+    btn.classList.toggle('text-on-surface-variant', !enabled);
+    btn.classList.toggle('cursor-not-allowed', !enabled);
+    btn.classList.toggle('bg-primary', enabled);
+    btn.classList.toggle('text-on-primary', enabled);
+    btn.classList.toggle('shadow-lg', enabled);
+    btn.classList.toggle('active:scale-95', enabled);
+  }
+
+  function activateRoleSection() {
+    step2.classList.remove('opacity-50', 'pointer-events-none');
+    step2.classList.add('opacity-100');
+    roleIndicator.classList.remove('bg-outline-variant');
+    roleIndicator.classList.add('bg-secondary-container');
+    roleHeading.classList.remove('text-on-surface-variant');
+    roleHeading.classList.add('text-on-surface');
+    donorIcon.classList.remove('text-on-surface-variant');
+    donorIcon.classList.add('text-secondary-container');
+    donorIcon.style.fontVariationSettings = "'FILL' 1";
+    donorTitle.classList.remove('text-on-surface-variant');
+    donorTitle.classList.add('text-on-surface');
+    centerIcon.classList.remove('text-on-surface-variant');
+    centerIcon.classList.add('text-secondary-container');
+    centerTitle.classList.remove('text-on-surface-variant');
+    centerTitle.classList.add('text-on-surface');
+    roleCards.forEach(card => {
+      card.classList.remove('cursor-not-allowed');
+      card.classList.add('hover:border-primary', 'cursor-pointer');
+    });
+    // Smooth scroll to role section
+    step2.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function selectLocation(loc, element) {
+    document.querySelectorAll('.location-card').forEach(card => card.classList.remove('active-location-card'));
+    element.classList.add('active-location-card');
+    selectedLocation = loc;
+    if (typeof logAnalyticsEvent === 'function') {
+      logAnalyticsEvent('select_location', { location: loc });
+    }
+    activateRoleSection();
+    setButtonEnabled(!!selectedRole);
+  }
+
+  function selectRole(role, element) {
+    if (!selectedLocation) return;
+    document.querySelectorAll('.role-card').forEach(card => card.classList.remove('active-location-card'));
+    element.classList.add('active-location-card');
+    selectedRole = role;
+    if (typeof logAnalyticsEvent === 'function') {
+      logAnalyticsEvent('select_role', { role: role });
+    }
+    setButtonEnabled(true);
+  }
+
+  btn.addEventListener('click', () => {
+    if (btn.disabled) return;
+    // Persist onboarding selection
+    try {
+      sessionStorage.setItem('onboarding', JSON.stringify({
+        location: selectedLocation,
+        role: selectedRole
+      }));
+    } catch (e) {}
+
+    if (typeof logAnalyticsEvent === 'function') {
+      logAnalyticsEvent('onboarding_complete', {
+        location: selectedLocation,
+        role: selectedRole
+      });
+    }
+
+    if (selectedRole === 'centro') {
+      // Centro de acopio: requiere cuenta -> login / registro
+      sessionStorage.setItem('postLoginRedirect', '/crear-centro-p1.html');
+      window.location.href = '/login.html';
+    } else {
+      // Donador: directo al mapa
+      window.location.href = '/mapa.html';
+    }
+  });
+</script>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
+<script src="/assets/js/firebase-init.js"></script>
+<script src="/assets/js/firebase-data-manager.js"></script>
+
+<!-- Live centers count -->
+<script>
+  (function () {
+    var countEl = document.getElementById('centros-count');
+    var labelEl = document.getElementById('centros-label');
+    var nf = new Intl.NumberFormat('es-VE');
+
+    function render(n) {
+      countEl.textContent = nf.format(n);
+      if (labelEl) labelEl.textContent = n === 1 ? 'centro de acopio registrado' : 'centros de acopio registrados';
+      countEl.classList.remove('count-pop');
+      void countEl.offsetWidth; // restart animation
+      countEl.classList.add('count-pop');
+    }
+
+    if (typeof db === 'undefined') return;
+    db.ref('centros').on('value', function (snapshot) {
+      render(snapshot.numChildren());
+    }, function () {
+      countEl.textContent = '0';
+    });
+  })();
+</script>
+<script src="/assets/js/bottom-nav.js"></script>
+</body>
+</html>

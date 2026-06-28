@@ -14,7 +14,6 @@
   }
 
   var contentEl = document.getElementById("centro-content");
-  var modalEl = document.getElementById("modal-reportar");
   var needsModalEl = document.getElementById("modal-needs");
 
   var params = new URLSearchParams(window.location.search);
@@ -53,6 +52,7 @@
   var detailMap = null;
   var lastCentro = null;
   var usingMock = false;
+  var viewedCentros = {};
 
   if (!centroId) {
     // No id: show the mock center as a first-instance preview.
@@ -73,20 +73,9 @@
 
   // Re-render owner actions once auth state is known (auth resolves async).
   auth.onAuthStateChanged(function (user) {
-    var navLogin = document.getElementById("nav-login");
-    if (navLogin) {
-      if (user) {
-        navLogin.textContent = "Mis centros";
-        navLogin.href = "/mis-centros.html";
-      } else {
-        navLogin.textContent = "Iniciar sesión";
-        navLogin.href = "/login.html";
-      }
-    }
     if (lastCentro) updateActions(lastCentro);
   });
 
-  var viewedCentros = {};
   function render(centro) {
     lastCentro = centro;
     if (!shellBuilt) buildShell(centro);
@@ -121,18 +110,20 @@
 
       // Center identity
       '<section class="space-y-sm">' +
-        '<h2 id="d-nombre" class="text-headline-lg font-headline-lg text-on-background"></h2>' +
+        '<h2 id="d-nombre" class="text-headline-lg-mobile md:text-headline-lg font-headline-lg text-on-background break-words"></h2>' +
         '<div class="flex items-start gap-2 text-on-surface-variant">' +
           '<span class="material-symbols-outlined text-primary mt-1">location_on</span>' +
           '<p id="d-address" class="text-body-md font-body-md"></p>' +
         '</div>' +
         '<div id="d-desc" class="text-body-md font-body-md text-on-surface-variant" style="display:none;"></div>' +
+        '<button id="btn-share" class="hidden mt-sm inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all shadow-sm self-start">' +
+          '<span class="material-symbols-outlined text-[18px]">ios_share</span>Compartir historia</button>' +
       '</section>' +
 
       // Map + Urgent needs bento
       '<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">' +
         '<div class="md:col-span-2 bg-white rounded-xl overflow-hidden shadow-sm border border-outline-variant group">' +
-          '<div class="relative h-64 md:h-80 w-full bg-surface-container">' +
+          '<div class="relative isolate h-64 md:h-80 w-full bg-surface-container">' +
             '<div id="detail-map" class="w-full h-full"></div>' +
             '<div class="absolute bottom-4 right-4 z-[500] flex flex-col gap-2">' +
               '<button id="map-zoom-in" class="w-10 h-10 bg-white rounded-lg shadow-md flex items-center justify-center text-primary hover:bg-surface-container-high active:scale-95 transition-all">' +
@@ -202,13 +193,28 @@
       if (zin) zin.addEventListener("click", function () { detailMap.zoomIn(); });
       if (zout) zout.addEventListener("click", function () { detailMap.zoomOut(); });
 
-      // Ensure correct sizing once the container has laid out.
-      setTimeout(function () { if (detailMap) detailMap.invalidateSize(); }, 100);
+      // The map is created before its container has its final laid-out size,
+      // which leaves Leaflet with stale tile dimensions (gray gaps/grid lines).
+      // Recalculate as soon as layout settles and whenever the container resizes.
+      var fixMapSize = function () { if (detailMap) detailMap.invalidateSize(); };
+      requestAnimationFrame(fixMapSize);
+      [100, 300, 600].forEach(function (ms) { setTimeout(fixMapSize, ms); });
+      window.addEventListener("resize", fixMapSize);
+      if (window.ResizeObserver) {
+        var mapEl = document.getElementById("detail-map");
+        if (mapEl) new ResizeObserver(fixMapSize).observe(mapEl);
+      }
     }
 
     var btnFullNeeds = document.getElementById("btn-full-needs");
     if (btnFullNeeds) btnFullNeeds.addEventListener("click", openNeedsModal);
-    setupReportModal();
+
+    var btnShare = document.getElementById("btn-share");
+    if (btnShare) btnShare.addEventListener("click", function () {
+      if (window.AcopifyStory && lastCentro) {
+        window.AcopifyStory.open(lastCentro, { id: usingMock ? null : centroId });
+      }
+    });
     setupNeedsModal();
     shellBuilt = true;
   }
@@ -223,7 +229,10 @@
     
     var addressEl = document.getElementById("d-address");
     if (addressEl) addressEl.textContent = buildAddressString(c.direccion);
-    
+
+    var shareBtn = document.getElementById("btn-share");
+    if (shareBtn) shareBtn.classList.toggle("hidden", !(c.coordenadas && typeof c.coordenadas.lat === "number"));
+
     document.title = (c.nombre || "Centro") + " - Acopify";
 
     var descEl = document.getElementById("d-desc");
@@ -316,51 +325,60 @@
     if (!el) return;
 
     var isOwner = !usingMock && currentUser && c.organizadorId && currentUser.uid === c.organizadorId;
-    var left =
-      '<button id="btn-reportar" class="flex items-center gap-2 text-outline hover:text-tertiary transition-colors group">' +
-      '<span class="material-symbols-outlined">flag</span>' +
-      '<span class="font-label-md text-label-md">Reportar centro</span></button>';
 
-    var right = '<a href="/" class="flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant text-primary font-label-md text-label-md hover:bg-surface-container-low active:scale-95 transition-all">' +
-      '<span class="material-symbols-outlined text-[18px]">arrow_back</span>Volver al mapa</a>';
+    // Owners get an "Editar centro" action; everyone else sees no action row.
     if (isOwner) {
-      right += '<a href="/editar.html?id=' + centroId + '" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">' +
+      el.className = "flex justify-end py-lg border-t border-outline-variant";
+      el.innerHTML =
+        '<a href="/editar.html?id=' + centroId + '" class="flex items-center justify-center gap-2 w-full md:w-auto px-4 py-3 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">' +
         '<span class="material-symbols-outlined text-[18px]">edit</span>Editar centro</a>';
-    }
-
-    el.innerHTML = left + '<div class="flex items-center gap-sm">' + right + '</div>';
-
-    var reportBtn = document.getElementById("btn-reportar");
-    if (reportBtn) {
-      reportBtn.addEventListener("click", function () {
-        if (usingMock) {
-          alert("Esta es una vista de demostración. Selecciona un centro real desde el mapa para reportarlo.");
-          return;
-        }
-        showModal(modalEl);
-      });
+    } else {
+      el.className = "hidden";
+      el.innerHTML = "";
     }
   }
 
+  // Normaliza el contacto a listas, soportando el formato nuevo (arrays
+  // telefonos/whatsapps) y el antiguo (strings telefono/whatsapp).
+  function normalizeContacto(contacto) {
+    var result = { telefonos: [], whatsapps: [] };
+    if (!contacto) return result;
+    if (Array.isArray(contacto.telefonos)) {
+      result.telefonos = contacto.telefonos.filter(Boolean);
+    } else if (contacto.telefono) {
+      result.telefonos = [contacto.telefono];
+    }
+    if (Array.isArray(contacto.whatsapps)) {
+      result.whatsapps = contacto.whatsapps.filter(Boolean);
+    } else if (contacto.whatsapp) {
+      result.whatsapps = [contacto.whatsapp];
+    }
+    return result;
+  }
+
   function buildContactHtml(contacto) {
+    var c = normalizeContacto(contacto);
     var html = "";
-    if (contacto && contacto.telefono) {
+
+    c.telefonos.forEach(function (tel) {
       html +=
-        '<a class="flex items-center justify-between w-full p-md bg-primary text-on-primary rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-md group" href="tel:' + escapeHtml(contacto.telefono) + '">' +
+        '<a class="flex items-center justify-between w-full p-md bg-primary text-on-primary rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-md group" href="tel:' + escapeHtml(tel) + '">' +
           '<div class="flex items-center gap-4"><span class="material-symbols-outlined">call</span>' +
           '<div class="text-left"><p class="text-status-sm font-status-sm opacity-80 uppercase">Llamada directa</p>' +
-          '<p class="text-body-lg font-bold">' + escapeHtml(contacto.telefono) + '</p></div></div>' +
+          '<p class="text-body-lg font-bold">' + escapeHtml(tel) + '</p></div></div>' +
           '<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">chevron_right</span></a>';
-    }
-    if (contacto && contacto.whatsapp) {
-      var wa = contacto.whatsapp.replace(/[^0-9+]/g, "").replace("+", "");
+    });
+
+    c.whatsapps.forEach(function (num) {
+      var wa = num.replace(/[^0-9+]/g, "").replace("+", "");
       html +=
         '<a class="flex items-center justify-between w-full p-md bg-[#25D366] text-white rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-md group" href="https://wa.me/' + wa + '" target="_blank" rel="noopener">' +
           '<div class="flex items-center gap-4"><span class="material-symbols-outlined">chat</span>' +
           '<div class="text-left"><p class="text-status-sm font-status-sm opacity-80 uppercase">WhatsApp coordinación</p>' +
-          '<p class="text-body-lg font-bold">' + escapeHtml(contacto.whatsapp) + '</p></div></div>' +
+          '<p class="text-body-lg font-bold">' + escapeHtml(num) + '</p></div></div>' +
           '<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">chevron_right</span></a>';
-    }
+    });
+
     if (!html) {
       html = '<p class="p-md bg-surface-container-low rounded-xl text-on-surface-variant text-body-md">Sin información de contacto.</p>';
     }
@@ -507,60 +525,6 @@
     });
   }
 
-  function setupReportModal() {
-    var cancelBtn = document.getElementById("btn-cancel-report");
-    var sendBtn = document.getElementById("btn-send-report");
-    var motivoInput = document.getElementById("motivo-reporte");
-
-    if (cancelBtn) {
-      cancelBtn.addEventListener("click", function () {
-        hideModal(modalEl);
-        motivoInput.value = "";
-      });
-    }
-    modalEl.addEventListener("click", function (e) {
-      if (e.target === modalEl) hideModal(modalEl);
-    });
-
-    if (sendBtn) {
-      sendBtn.addEventListener("click", function () {
-        var motivo = motivoInput.value.trim();
-        if (!motivo) {
-          alert("Por favor describe el motivo del reporte.");
-          return;
-        }
-        sendBtn.disabled = true;
-        sendBtn.textContent = "Enviando...";
-
-        var reporteData = {
-          centroId: centroId,
-          motivo: motivo,
-          creadoEn: firebase.database.ServerValue.TIMESTAMP,
-          reportadoPor: currentUser ? currentUser.uid : "anonimo"
-        };
-
-        db.ref("reportes").push(reporteData)
-          .then(function () {
-            return db.ref("centros/" + centroId + "/reportes").transaction(function (current) {
-              return (current || 0) + 1;
-            });
-          })
-          .then(function () {
-            hideModal(modalEl);
-            motivoInput.value = "";
-            alert("Reporte enviado. Gracias por tu colaboración.");
-          })
-          .catch(function (error) {
-            alert("Error al enviar reporte: " + error.message);
-          })
-          .finally(function () {
-            sendBtn.disabled = false;
-            sendBtn.textContent = "Enviar reporte";
-          });
-      });
-    }
-  }
-
   function showModal(el) {
     el.classList.remove("hidden");
     el.classList.add("flex");
@@ -612,8 +576,12 @@
     var parts = [];
     if (dir.calle) parts.push(dir.calle);
     if (dir.piso) parts.push(dir.piso);
+    if (dir.barrio) parts.push(dir.barrio);
+    if (dir.sector && dir.sector !== dir.barrio) parts.push(dir.sector);
     if (dir.ciudad) parts.push(dir.ciudad);
+    if (dir.municipio) parts.push("Mun. " + dir.municipio);
     if (dir.estado) parts.push(dir.estado);
+    if (dir.pais && dir.pais !== "Venezuela") parts.push(dir.pais);
     return parts.join(", ") || "Sin dirección registrada";
   }
 

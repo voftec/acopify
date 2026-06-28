@@ -8,6 +8,18 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="manifest" href="/site.webmanifest">
+<link rel="canonical" href="https://www.acopify.com/ajustes" />
+<meta name="description" content="Administra los ajustes de tu cuenta y tu centro de acopio en Acopify." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Acopify" />
+<meta property="og:title" content="Acopify - Ajustes" />
+<meta property="og:description" content="Administra los ajustes de tu cuenta y tu centro de acopio en Acopify." />
+<meta property="og:url" content="https://www.acopify.com/ajustes" />
+<meta property="og:image" content="https://www.acopify.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:alt" content="Acopify - mapa de centros de acopio en Venezuela" />
 <link rel="stylesheet" href="/assets/css/tailwind.css" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <style>
@@ -29,7 +41,7 @@
 <!-- TopAppBar -->
 <header class="fixed top-0 left-0 right-0 z-40 bg-surface shadow-sm border-b border-outline-variant flex justify-between items-center w-full px-md h-16">
   <div class="flex items-center gap-sm">
-    <a href="/mis-centros.html" class="p-2 -ml-2 rounded-full hover:bg-surface-container-high transition-all active:scale-95 flex items-center justify-center" aria-label="Volver">
+    <a href="/mi-centro.html" class="p-2 -ml-2 rounded-full hover:bg-surface-container-high transition-all active:scale-95 flex items-center justify-center" aria-label="Volver">
       <span class="material-symbols-outlined text-on-surface-variant" data-icon="arrow_back">arrow_back</span>
     </a>
     <span class="material-symbols-outlined text-primary" data-icon="emergency">emergency</span>
@@ -51,7 +63,7 @@
 
   <!-- Loading State -->
   <div id="loading-state" class="flex flex-col items-center justify-center py-xl">
-    <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary-container border-t-transparent mb-4"></div>
+    <img src="/favicon.svg" alt="Cargando" class="w-12 h-12 animate-spin mb-4" />
     <p class="text-body-md text-on-surface-variant">Cargando perfil...</p>
   </div>
 
@@ -101,10 +113,27 @@
             <p class="text-[12px] text-on-surface-variant mt-1 ml-1">El correo no se puede modificar.</p>
           </div>
           <div>
-            <label class="block text-label-md font-label-md text-on-surface-variant mb-1 ml-1" for="phone">Número de Teléfono</label>
-            <div class="relative">
-              <input class="w-full h-12 px-md pt-1 bg-surface-container-low border border-outline-variant rounded-lg text-body-md font-body-md focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" id="phone" type="tel" placeholder="+58 412-555-0199">
-              <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline" data-icon="call">call</span>
+            <label class="block text-label-md font-label-md text-on-surface-variant mb-1 ml-1" for="phone-local">Número de Teléfono</label>
+            <div class="flex h-12 bg-surface-container-low border border-outline-variant rounded-lg focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all overflow-hidden">
+              <select id="phone-cc" class="h-full pl-3 pr-2 bg-transparent border-r border-outline-variant text-body-md font-body-md outline-none cursor-pointer text-on-surface shrink-0">
+                <option value="+58">🇻🇪 +58</option>
+                <option value="+54">🇦🇷 +54</option>
+                <option value="+57">🇨🇴 +57</option>
+                <option value="+34">🇪🇸 +34</option>
+                <option value="+1">🇺🇸 +1</option>
+                <option value="+52">🇲🇽 +52</option>
+                <option value="+56">🇨🇱 +56</option>
+                <option value="+51">🇵🇪 +51</option>
+                <option value="+55">🇧🇷 +55</option>
+                <option value="+593">🇪🇨 +593</option>
+                <option value="+591">🇧🇴 +591</option>
+                <option value="+595">🇵🇾 +595</option>
+                <option value="+598">🇺🇾 +598</option>
+                <option value="+507">🇵🇦 +507</option>
+                <option value="+506">🇨🇷 +506</option>
+              </select>
+              <input class="flex-1 min-w-0 h-full px-3 bg-transparent text-body-md font-body-md outline-none" id="phone-local" type="tel" placeholder="412 555 0199">
+              <span class="flex items-center pr-4 material-symbols-outlined text-outline pointer-events-none" data-icon="call">call</span>
             </div>
           </div>
           <div class="pt-sm">
@@ -134,5 +163,6 @@
 <script src="/assets/js/firebase-init.js"></script>
 <script src="/assets/js/firebase-data-manager.js"></script>
 <script src="/assets/js/ajustes.js"></script>
+<script src="/assets/js/bottom-nav.js"></script>
 </body>
 </html>

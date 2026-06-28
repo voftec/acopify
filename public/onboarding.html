@@ -8,6 +8,18 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="manifest" href="/site.webmanifest">
+<link rel="canonical" href="https://www.acopify.com/onboarding" />
+<meta name="description" content="Configura tu experiencia en Acopify: elige tu ubicación y tu rol para empezar a ayudar." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Acopify" />
+<meta property="og:title" content="Acopify - Onboarding" />
+<meta property="og:description" content="Configura tu experiencia en Acopify: elige tu ubicación y tu rol para empezar a ayudar." />
+<meta property="og:url" content="https://www.acopify.com/onboarding" />
+<meta property="og:image" content="https://www.acopify.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:alt" content="Acopify - mapa de centros de acopio en Venezuela" />
 <link rel="stylesheet" href="/assets/css/tailwind.css" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
@@ -28,48 +40,79 @@
       linear-gradient(to bottom, rgba(0,28,70,0.45) 0%, rgba(0,18,52,0.80) 70%, rgba(0,15,45,0.92) 100%),
       url('https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=1600&auto=format&fit=crop');
     background-size: cover;
-    background-position: center;
+    background-position: center 30%;
   }
   @keyframes count-pop { 0% { transform: scale(1.12); } 100% { transform: scale(1); } }
   .count-pop { animation: count-pop 0.35s ease-out; }
 
-  /* Dynamic viewport handling */
-  @media (orientation: portrait) {
-    .hero-img {
-      background-position: center 30%;
-    }
+  /* ============================================================
+     Responsive, viewport-aware sizing.
+     The hero scales with the *visible* viewport so the location
+     + role steps and the "Finalizar" button always stay on screen,
+     instead of a fixed height that pushed content off small phones.
+     ============================================================ */
+
+  /* Shell fills the dynamic viewport (accounts for mobile browser chrome). */
+  .onboarding-shell {
+    min-height: 100vh;
+    min-height: 100dvh;
   }
-  @media (orientation: landscape) {
-    .hero-img {
-      background-position: center center;
-      min-height: 280px !important;
-    }
-    body {
-      min-height: 100vh;
-    }
+
+  /* Phones: keep the hero compact so the form fits. */
+  .hero-img {
+    min-height: clamp(168px, 30vh, 300px);
   }
-  @media (max-height: 500px) {
-    .hero-img {
-      min-height: 220px !important;
-      padding-top: 0.75rem !important;
-      padding-bottom: 0.75rem !important;
-    }
-    .hero-img h2 {
-      font-size: 32px !important;
-      line-height: 36px !important;
-    }
+  /* Heading weight scales with screen size: lighter on phones (so the
+     big text doesn't look cramped/heavy), bolder on larger screens. */
+  .hero-img h2 {
+    font-weight: 600 !important;
+    letter-spacing: -0.01em !important;
+  }
+  /* Tablets / desktops: a taller, more immersive hero. */
+  @media (min-width: 768px) {
+    .hero-img { min-height: clamp(300px, 40vh, 420px); background-position: center center; }
+    .hero-img h2 { font-weight: 700 !important; letter-spacing: -0.015em !important; }
+  }
+  @media (min-width: 1024px) {
+    .hero-img { min-height: clamp(360px, 42vh, 480px); }
+    .hero-img h2 { font-weight: 800 !important; letter-spacing: -0.02em !important; }
   }
   @media (min-width: 1536px) {
+    .hero-img { min-height: 520px; }
+  }
+
+  /* Short viewports (small phones, landscape): shrink the hero and
+     tighten spacing/typography so nothing gets cut off. */
+  @media (max-height: 720px) {
+    .hero-img { min-height: clamp(132px, 22vh, 200px); }
+    main { padding-top: 0 !important; }
+    .ob-steps > * + * { margin-top: 12px !important; }
+    .ob-footer { padding-top: 14px !important; padding-bottom: 10px !important; }
+  }
+  @media (max-height: 620px) {
     .hero-img {
-      min-height: 520px;
+      min-height: 116px;
+      padding-top: 0.6rem !important;
+      padding-bottom: 0.6rem !important;
     }
+    .hero-img h2 {
+      font-size: 24px !important;
+      line-height: 28px !important;
+      margin-bottom: 0 !important;
+    }
+    .hero-img p { display: none; }          /* drop supporting copy when space is tight */
+    .hero-stat { margin-bottom: 0.4rem !important; }
+    .location-card, .role-card { padding: 6px 8px !important; }
+    .ob-steps > * + * { margin-top: 8px !important; }
+    .ob-step-head { margin-bottom: 4px !important; }
+    .ob-terms { font-size: 11px !important; line-height: 15px !important; margin-top: 6px !important; }
   }
 </style>
 </head>
 <body class="min-h-screen flex flex-col font-body-md text-on-surface">
 
 <!-- App Screen -->
-<div class="w-full max-w-5xl mx-auto bg-surface flex flex-col flex-grow min-h-screen md:px-6 lg:px-8 xl:px-12">
+<div class="onboarding-shell w-full max-w-5xl mx-auto bg-surface flex flex-col flex-grow min-h-screen md:px-6 lg:px-8 xl:px-12">
 
   <!-- TopAppBar -->
   <header class="flex justify-between items-center w-full px-md md:px-8 lg:px-10 h-16 flex-shrink-0">
@@ -81,15 +124,15 @@
   </header>
 
   <!-- Hero (shared across steps) -->
-  <section class="hero-img px-md md:px-8 lg:px-10 pt-xl md:pt-10 lg:pt-12 pb-xl md:pb-10 lg:pb-12 flex-shrink-0 min-h-[320px] md:min-h-[380px] lg:min-h-[440px]">
+  <section class="hero-img px-md md:px-8 lg:px-10 pt-xl md:pt-10 lg:pt-12 pb-xl md:pb-10 lg:pb-12 flex-shrink-0 flex flex-col justify-center">
     <div class="max-w-4xl mx-auto md:px-4">
       <!-- Live stat pill (supporting social proof) -->
-      <div class="flex items-center justify-center gap-3 pl-4 pr-5 py-2.5 rounded-full bg-white/15 border border-white/25 backdrop-blur-sm mb-lg md:mb-xl mx-auto w-fit">
+      <div class="hero-stat flex items-center justify-center gap-3 pl-4 pr-5 py-2.5 rounded-full bg-white/15 border border-white/25 backdrop-blur-sm mb-lg md:mb-xl mx-auto w-fit">
         <span class="relative flex h-3 w-3">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
           <span class="relative inline-flex rounded-full h-3 w-3 bg-green-400"></span>
         </span>
-        <span class="text-white text-[15px] md:text-[16px] font-bold tracking-wide"><span id="centros-count">—</span> centros activos</span>
+        <span class="text-white text-[15px] md:text-[16px] font-bold tracking-wide"><span id="centros-count">—</span> <span id="centros-label">centros de acopio registrados</span></span>
       </div>
 
       <h2 class="font-display-lg text-[36px] md:text-[48px] lg:text-[52px] leading-[40px] md:leading-[52px] lg:leading-[56px] font-extrabold tracking-[-0.02em] text-white mb-lg md:mb-xl lg:mb-2xl drop-shadow-sm">Encuentra dónde y qué donar</h2>
@@ -100,10 +143,10 @@
   <!-- Content (both sections visible) -->
   <main class="flex-grow flex flex-col px-md md:px-8 lg:px-10 pt-sm md:pt-4 lg:pt-4">
 
-    <div class="max-w-4xl mx-auto w-full space-y-md">
+    <div class="ob-steps max-w-4xl mx-auto w-full space-y-md">
       <!-- STEP 1: Ubicación -->
       <div id="step-1" class="flex flex-col">
-        <div class="flex items-center gap-sm mb-sm">
+        <div class="ob-step-head flex items-center gap-sm mb-sm">
           <span class="w-6 h-1 rounded-full bg-primary"></span>
           <h3 class="font-headline-md text-[20px] font-bold text-on-surface">¿En donde te encuentras?</h3>
         </div>
@@ -123,7 +166,7 @@
 
       <!-- STEP 2: Rol (initially disabled/greyed) -->
       <div id="step-2" class="flex flex-col opacity-50 pointer-events-none transition-opacity duration-300">
-        <div class="flex items-center gap-sm mb-sm">
+        <div class="ob-step-head flex items-center gap-sm mb-sm">
           <span class="w-6 h-1 rounded-full bg-outline-variant" id="role-indicator"></span>
           <h3 class="font-headline-md text-[20px] font-bold text-on-surface-variant" id="role-heading">¿Qué rol tienes?</h3>
         </div>
@@ -147,75 +190,23 @@
     </div>
 
     <!-- Shared footer actions -->
-    <div class="mt-auto pt-lg pb-md">
+    <div class="ob-footer mt-auto pt-lg pb-md">
       <button id="btn-continue" disabled class="w-full max-w-4xl mx-auto py-3 px-lg bg-surface-dim text-on-surface-variant rounded-xl font-body-lg text-[17px] font-bold flex items-center justify-center gap-sm transition-all duration-300 cursor-not-allowed">
         <span id="btn-continue-label">Finalizar</span>
         <span class="material-symbols-outlined">arrow_forward</span>
       </button>
-      <p class="text-center text-sm text-on-surface-variant mt-sm px-4">Al continuar, aceptas nuestros <a href="#" class="font-semibold text-primary">Términos de Servicio</a>.</p>
+      <p class="ob-terms text-center text-sm text-on-surface-variant mt-sm px-4">Al continuar, aceptas nuestros <a href="#" class="font-semibold text-primary">Términos de Servicio</a>.</p>
     </div>
   </main>
 </div>
 
 <script>
-  // Screen size detection and dynamic adjustments
+  // Hero layout/sizing is handled responsively in CSS (viewport-aware clamps).
+  // This script only swaps the hero image for a resolution that fits the
+  // current viewport width, to keep the download light on phones.
   (function () {
-    const appContainer = document.querySelector('.w-full.max-w-5xl');
     const heroSection = document.querySelector('.hero-img');
-    const heroContent = document.querySelector('.hero-img .max-w-4xl');
-    const mainContent = document.querySelector('.max-w-4xl.mx-auto.w-full');
-    const locationCards = document.querySelector('#step-1 .grid');
-    const roleCards = document.querySelector('#step-2 .grid');
-
-    function adjustForScreenSize() {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-
-      // Small mobile (portrait)
-      if (width < 640) {
-        // Tighter layout for mobile
-        heroSection.style.minHeight = '320px';
-        heroContent.style.padding = '0';
-        if (locationCards) locationCards.style.gridTemplateColumns = '1fr';
-        if (roleCards) roleCards.style.gridTemplateColumns = '1fr';
-      }
-      // Large mobile / tablet portrait
-      else if (width >= 640 && width < 768) {
-        heroSection.style.minHeight = '340px';
-        if (locationCards) locationCards.style.gridTemplateColumns = '1fr';
-        if (roleCards) roleCards.style.gridTemplateColumns = '1fr';
-      }
-      // Tablet / small desktop
-      else if (width >= 768 && width < 1024) {
-        heroSection.style.minHeight = '380px';
-        if (locationCards) locationCards.style.gridTemplateColumns = '1fr';
-        if (roleCards) roleCards.style.gridTemplateColumns = '2fr';
-      }
-      // Desktop
-      else if (width >= 1024 && width < 1280) {
-        heroSection.style.minHeight = '440px';
-        if (locationCards) locationCards.style.gridTemplateColumns = 'repeat(2, 1fr)';
-        if (roleCards) roleCards.style.gridTemplateColumns = 'repeat(2, 1fr)';
-      }
-      // Large desktop
-      else {
-        heroSection.style.minHeight = '480px';
-        if (locationCards) locationCards.style.gridTemplateColumns = 'repeat(2, 1fr)';
-        if (roleCards) roleCards.style.gridTemplateColumns = 'repeat(2, 1fr)';
-      }
-
-      // Adjust for very short screens
-      if (height < 600) {
-        heroSection.style.paddingTop = '1rem';
-        heroSection.style.paddingBottom = '1rem';
-      } else {
-        heroSection.style.paddingTop = '';
-        heroSection.style.paddingBottom = '';
-      }
-
-      // Optimize hero image based on screen size
-      optimizeHeroImage(width);
-    }
+    if (!heroSection) return;
 
     function optimizeHeroImage(screenWidth) {
       let imageUrl;
@@ -229,23 +220,21 @@
         imageUrl = 'https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2000&auto=format&fit=crop';
       }
 
-      // Only update if the image URL is different
       const currentBg = heroSection.style.backgroundImage;
       const newBg = `linear-gradient(to bottom, rgba(0,28,70,0.45) 0%, rgba(0,18,52,0.80) 70%, rgba(0,15,45,0.92) 100%), url('${imageUrl}')`;
-
       if (!currentBg || !currentBg.includes(imageUrl)) {
         heroSection.style.backgroundImage = newBg;
       }
     }
 
-    // Initial adjustment
-    adjustForScreenSize();
+    optimizeHeroImage(window.innerWidth);
 
-    // Listen for resize events with debounce
     let resizeTimeout;
     window.addEventListener('resize', function () {
       clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(adjustForScreenSize, 150);
+      resizeTimeout = setTimeout(function () {
+        optimizeHeroImage(window.innerWidth);
+      }, 150);
     });
   })();
 </script>
@@ -344,7 +333,7 @@
       window.location.href = '/login.html';
     } else {
       // Donador: directo al mapa
-      window.location.href = '/dashboard.html';
+      window.location.href = '/mapa.html';
     }
   });
 </script>
@@ -361,10 +350,12 @@
 <script>
   (function () {
     var countEl = document.getElementById('centros-count');
+    var labelEl = document.getElementById('centros-label');
     var nf = new Intl.NumberFormat('es-VE');
 
     function render(n) {
       countEl.textContent = nf.format(n);
+      if (labelEl) labelEl.textContent = n === 1 ? 'centro de acopio registrado' : 'centros de acopio registrados';
       countEl.classList.remove('count-pop');
       void countEl.offsetWidth; // restart animation
       countEl.classList.add('count-pop');
@@ -378,5 +369,6 @@
     });
   })();
 </script>
+<script src="/assets/js/bottom-nav.js"></script>
 </body>
 </html>

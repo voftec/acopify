@@ -36,7 +36,7 @@
       .then(function () {
         showInfo(
           "Te enviamos un correo para restablecer tu contrasena a " + email +
-          ". Revisa tu bandeja de entrada."
+          ". Revisa tu bandeja de entrada y tambien tu carpeta de spam o correo no deseado."
         );
         form.reset();
       })

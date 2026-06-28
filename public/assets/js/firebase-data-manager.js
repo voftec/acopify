@@ -44,7 +44,7 @@
   function isCacheValid(cacheType, key) {
     if (!cache[cacheType]) return false;
     
-    if (key !== undefined) {
+    if (key != null) {
       var timestamp = cache[cacheType].timestamps[key];
       return timestamp && (Date.now() - timestamp < cache[cacheType].ttl);
     } else {
@@ -56,7 +56,16 @@
   function setCache(cacheType, key, data) {
     if (!cache[cacheType]) return;
     
-    if (key !== undefined) {
+    if (key != null) {
+      // Defensive: keyed caches store data in an object. If it was cleared to
+      // null (or never initialized), re-create it before indexing to avoid
+      // "Cannot set properties of null" crashes.
+      if (cache[cacheType].data == null || typeof cache[cacheType].data !== "object") {
+        cache[cacheType].data = {};
+      }
+      if (cache[cacheType].timestamps == null) {
+        cache[cacheType].timestamps = {};
+      }
       cache[cacheType].data[key] = data;
       cache[cacheType].timestamps[key] = Date.now();
     } else {
@@ -68,7 +77,7 @@
   function getCache(cacheType, key) {
     if (!cache[cacheType]) return null;
     
-    if (key !== undefined) {
+    if (key != null) {
       if (isCacheValid(cacheType, key)) {
         return cache[cacheType].data[key];
       }
@@ -83,11 +92,11 @@
   function clearCache(cacheType, key) {
     if (!cache[cacheType]) return;
     
-    if (key !== undefined) {
+    if (key != null) {
       delete cache[cacheType].data[key];
       delete cache[cacheType].timestamps[key];
     } else {
-      cache[cacheType].data = key !== undefined ? {} : null;
+      cache[cacheType].data = cache[cacheType].timestamps ? {} : null;
       cache[cacheType].timestamp = null;
       cache[cacheType].timestamps = {};
     }
@@ -97,9 +106,9 @@
   function cleanupListener(cacheType, key) {
     if (!cache[cacheType]) return;
     
-    var listener = key !== undefined ? cache[cacheType].listeners[key] : cache[cacheType].listener;
+    var listener = key != null ? cache[cacheType].listeners[key] : cache[cacheType].listener;
     if (listener) {
-      var ref = key !== undefined ? 
+      var ref = key != null ? 
         db.ref(cacheType === "centro" ? "centros/" + key : cacheType) :
         db.ref("centros");
       
@@ -107,7 +116,7 @@
         ref.off("value", listener);
       }
       
-      if (key !== undefined) {
+      if (key != null) {
         delete cache[cacheType].listeners[key];
       } else {
         cache[cacheType].listener = null;
@@ -259,7 +268,13 @@
       });
     },
 
-    // Get user's centros with caching
+    // Get user's centros with caching.
+    //
+    // One-shot indexed query: `centros` is indexed on `organizadorId`
+    // (see rtdb.rules.json), so the server returns only this owner's centers
+    // — fast and bandwidth-light. We use `once()` (not a persistent `on()`
+    // listener) so there is nothing to leak; mi-centro re-queries with
+    // forceRefresh after a write to get fresh data instantly.
     getUserCentros: function (uid, forceRefresh) {
       return new Promise(function (resolve, reject) {
         if (!uid) {
@@ -273,26 +288,23 @@
           return;
         }
 
-        // Cleanup existing listener
-        cleanupListener("userCentros", uid);
-
-        var listener = function (snapshot) {
-          var data = snapshot.val();
-          setCache("userCentros", uid, data);
-          resolve(data);
-        };
-
-        cache.userCentros.listeners[uid] = listener;
         db.ref("centros")
           .orderByChild("organizadorId")
           .equalTo(uid)
-          .on("value", listener);
-        
-        // Return initial data from cache if available
-        if (cached) {
-          resolve(cached);
-        }
+          .once("value")
+          .then(function (snapshot) {
+            var data = snapshot.val();
+            setCache("userCentros", uid, data);
+            resolve(data);
+          })
+          .catch(reject);
       });
+    },
+
+    // Invalidate a user's cached centros (call after creating/deleting one so
+    // the dashboard reflects the change without serving a stale list).
+    invalidateUserCentros: function (uid) {
+      if (uid != null) clearCache("userCentros", uid);
     },
 
     // Update centro data and invalidate cache

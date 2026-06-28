@@ -2,13 +2,36 @@
   "rules": {
     "centros": {
       ".read": true,
+      ".indexOn": ["organizadorId"],
       "$centroId": {
         ".write": "auth != null && (!data.exists() || data.child('organizadorId').val() === auth.uid)",
+
+        "nombre":             { ".write": "auth != null && (root.child('centros').child($centroId).child('organizadorId').val() === auth.uid || root.child('centros').child($centroId).child('colaboradores').child(auth.uid).exists())" },
+        "descripcion":        { ".write": "auth != null && (root.child('centros').child($centroId).child('organizadorId').val() === auth.uid || root.child('centros').child($centroId).child('colaboradores').child(auth.uid).exists())" },
+        "direccion":          { ".write": "auth != null && (root.child('centros').child($centroId).child('organizadorId').val() === auth.uid || root.child('centros').child($centroId).child('colaboradores').child(auth.uid).exists())" },
+        "coordenadas":        { ".write": "auth != null && (root.child('centros').child($centroId).child('organizadorId').val() === auth.uid || root.child('centros').child($centroId).child('colaboradores').child(auth.uid).exists())" },
+        "contacto":           { ".write": "auth != null && (root.child('centros').child($centroId).child('organizadorId').val() === auth.uid || root.child('centros').child($centroId).child('colaboradores').child(auth.uid).exists())" },
+        "horarios":           { ".write": "auth != null && (root.child('centros').child($centroId).child('organizadorId').val() === auth.uid || root.child('centros').child($centroId).child('colaboradores').child(auth.uid).exists())" },
+        "organizadorNombre":  { ".write": "auth != null && (root.child('centros').child($centroId).child('organizadorId').val() === auth.uid || root.child('centros').child($centroId).child('colaboradores').child(auth.uid).exists())" },
+
         "necesidades": {
           "$needId": {
-            ".write": "auth != null && root.child('centros').child($centroId).child('organizadorId').val() === auth.uid"
+            ".write": "auth != null && (root.child('centros').child($centroId).child('organizadorId').val() === auth.uid || root.child('centros').child($centroId).child('colaboradores').child(auth.uid).exists())"
           }
         },
+
+        "colaboradores": {
+          "$colabUid": {
+            ".write": "auth != null && (root.child('centros').child($centroId).child('organizadorId').val() === auth.uid || (auth.uid === $colabUid && (data.exists() || (auth.token.email != null && root.child('centros').child($centroId).child('invitaciones').child(auth.token.email.toLowerCase().replace('.', ',')).exists()))))"
+          }
+        },
+
+        "invitaciones": {
+          "$emailKey": {
+            ".write": "auth != null && (root.child('centros').child($centroId).child('organizadorId').val() === auth.uid || (auth.token.email != null && $emailKey === auth.token.email.toLowerCase().replace('.', ',')))"
+          }
+        },
+
         "reportes": {
           ".write": true
         }

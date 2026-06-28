@@ -6,9 +6,30 @@
  *   Project Settings > General > Your apps > Firebase SDK snippet
  */
 
+// Serve the Google OAuth handler from the canonical app origin. Mobile browsers
+// (Safari ITP, Chrome storage partitioning) block the cross-domain storage that
+// signInWithRedirect needs when authDomain is the default *.firebaseapp.com — so
+// the redirect comes back but the sign-in never completes. Firebase Hosting
+// serves /__/auth/handler on the custom domain, making the flow first-party.
+//
+// We PIN the production authDomain to "www.acopify.com" (the only redirect URI
+// registered on the OAuth client). Using location.hostname directly would break
+// if the page ever runs on the apex "acopify.com", whose /__/auth/handler is not
+// a registered redirect URI -> Error 400 redirect_uri_mismatch. Localhost keeps
+// the firebaseapp.com default so local dev still works.
+var acopifyAuthDomain;
+if (typeof location !== "undefined" && location.hostname === "localhost") {
+  acopifyAuthDomain = "acopify-venezuela.firebaseapp.com";
+} else if (typeof location !== "undefined" && /(^|\.)acopify\.com$/.test(location.hostname)) {
+  acopifyAuthDomain = "www.acopify.com";
+} else {
+  // Firebase default domains (*.web.app / *.firebaseapp.com) and previews.
+  acopifyAuthDomain = "acopify-venezuela.firebaseapp.com";
+}
+
 var firebaseConfig = {
   apiKey: "AIzaSyALQQ3QjOuhsLJqJnco8DkdxB-wcK39BHo",
-  authDomain: "acopify-venezuela.firebaseapp.com",
+  authDomain: acopifyAuthDomain,
   databaseURL: "https://acopify-venezuela-default-rtdb.firebaseio.com",
   projectId: "acopify-venezuela",
   storageBucket: "acopify-venezuela.firebasestorage.app",
@@ -34,6 +55,56 @@ window.logAnalyticsEvent = function (eventName, params) {
   } catch (error) {
     console.warn("Failed to log analytics event '" + eventName + "':", error);
   }
+};
+
+// Detect mobile/touch devices, where popup-based OAuth flows are unreliable
+// (popups are blocked or the window reference is severed). On these devices we
+// use a full-page redirect instead.
+window.acopifyIsMobile = function () {
+  try {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+      (navigator.maxTouchPoints && navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+  } catch (e) {
+    return false;
+  }
+};
+
+// Unified Google sign-in. On mobile it redirects; on desktop it uses a popup and
+// falls back to redirect when the popup flow breaks. `onSuccess(result)` runs
+// only for the popup path (the redirect path resolves via getRedirectResult on
+// the next page load). `onError(code)` receives a Firebase auth error code.
+window.acopifyGoogleSignIn = function (onSuccess, onError) {
+  if (!auth || typeof firebase === 'undefined' || !firebase.auth) {
+    if (onError) onError("auth/internal-error");
+    return;
+  }
+  var provider = new firebase.auth.GoogleAuthProvider();
+
+  if (window.acopifyIsMobile()) {
+    auth.signInWithRedirect(provider).catch(function (err) {
+      if (onError) onError(err.code);
+    });
+    return;
+  }
+
+  auth.signInWithPopup(provider)
+    .then(function (result) {
+      if (onSuccess) onSuccess(result);
+    })
+    .catch(function (error) {
+      var fallback = error.code === "auth/popup-blocked" ||
+        error.code === "auth/cancelled-popup-request" ||
+        error.code === "auth/internal-error" ||
+        error.code === "auth/web-storage-unsupported" ||
+        error.code === "auth/operation-not-supported-in-this-environment";
+      if (fallback) {
+        auth.signInWithRedirect(provider).catch(function (err) {
+          if (onError) onError(err.code);
+        });
+        return;
+      }
+      if (onError) onError(error.code);
+    });
 };
 
 try {

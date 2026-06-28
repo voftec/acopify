@@ -17,12 +17,17 @@
   var form = document.getElementById("form-perfil");
   var nameInput = document.getElementById("name");
   var emailInput = document.getElementById("email");
-  var phoneInput = document.getElementById("phone");
+  var phoneCcSelect = document.getElementById("phone-cc");
+  var phoneLocalInput = document.getElementById("phone-local");
   var btnGuardar = document.getElementById("btn-guardar");
   var btnLogout = document.getElementById("btn-logout");
   var formMessage = document.getElementById("form-message");
 
   var user = null;
+
+  // When redirected here to complete a missing phone number, prompt the user and
+  // send them back to Mi Centro once they save it.
+  var phoneSetup = /[?&]setup=phone\b/.test(window.location.search);
 
   auth.onAuthStateChanged(function (u) {
     loadingState.classList.add("hidden");
@@ -54,11 +59,28 @@
     // Load phone from RTDB profile using FirebaseDataManager
     FirebaseDataManager.getUserProfile(u.uid).then(function (profile) {
       if (profile) {
-        if (profile.telefono) phoneInput.value = profile.telefono;
+        if (profile.telefono) {
+          // Support both the new object format {cc, local, full} and
+          // the legacy flat string (e.g. "+54911441133050").
+          var parsed = (typeof profile.telefono === "object" && profile.telefono.cc)
+            ? profile.telefono
+            : parsePhoneNumber(profile.telefono);
+          phoneCcSelect.value = parsed.cc;
+          phoneLocalInput.value = parsed.local;
+        }
         if (profile.nombre && !u.displayName) {
           nameInput.value = profile.nombre;
           profileName.textContent = profile.nombre;
         }
+      }
+
+      // Forced phone-setup flow: nudge the user to fill in the missing number.
+      if (phoneSetup && !phoneLocalInput.value.trim()) {
+        showMessage(
+          "Agrega tu número de teléfono para que las personas puedan contactarte. Luego presiona Guardar Cambios.",
+          "info"
+        );
+        phoneLocalInput.focus();
       }
     }).catch(function () {
       // Ignore load errors, keep defaults
@@ -73,11 +95,21 @@
     hideMessage();
 
     var nombre = nameInput.value.trim();
-    var telefono = phoneInput.value.trim();
+    var localNum = phoneLocalInput.value.trim().replace(/[^\d]/g, "");
+    var telefono = localNum
+      ? { cc: phoneCcSelect.value, local: localNum, full: phoneCcSelect.value + localNum }
+      : "";
 
     if (!nombre) {
       showMessage("Por favor ingresa tu nombre.", "error");
       nameInput.focus();
+      return;
+    }
+
+    // In the forced setup flow the phone number is mandatory.
+    if (phoneSetup && !localNum) {
+      showMessage("Por favor ingresa tu número de teléfono para continuar.", "error");
+      phoneLocalInput.focus();
       return;
     }
 
@@ -103,6 +135,14 @@
         btnGuardar.classList.replace("bg-primary", "bg-emerald-600");
 
         if (navigator.vibrate) navigator.vibrate(50);
+
+        // Completed the forced phone-setup flow: return to Mi Centro.
+        if (phoneSetup && telefono && telefono.full) {
+          setTimeout(function () {
+            window.location.href = "/mi-centro.html";
+          }, 900);
+          return;
+        }
 
         setTimeout(function () {
           btnGuardar.innerHTML = originalText;
@@ -138,6 +178,25 @@
 
   function hideMessage() {
     formMessage.classList.add("hidden");
+  }
+
+  // Split a stored phone string (e.g. "+54911441133050") into its country code
+  // and local number parts. Country codes are matched longest-first to avoid
+  // a 1-digit prefix swallowing a 3-digit code (e.g. +593 vs +5).
+  function parsePhoneNumber(fullPhone) {
+    var CODES = [
+      "+593", "+591", "+595", "+598", "+507", "+506",
+      "+58", "+54", "+57", "+34", "+52", "+56", "+51", "+55", "+1"
+    ];
+    if (!fullPhone) return { cc: "+58", local: "" };
+    var phone = String(fullPhone).replace(/[\s\-().]/g, "");
+    if (phone.charAt(0) !== "+") return { cc: "+58", local: phone };
+    for (var i = 0; i < CODES.length; i++) {
+      if (phone.indexOf(CODES[i]) === 0) {
+        return { cc: CODES[i], local: phone.slice(CODES[i].length) };
+      }
+    }
+    return { cc: "+58", local: phone };
   }
 
   // Cleanup Firebase listeners on page unload

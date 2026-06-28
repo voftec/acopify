@@ -1,52 +1,321 @@
 <!DOCTYPE html>
-<html lang="es">
+<html class="light" lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Editar Centro - Acopify</title>
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="manifest" href="/site.webmanifest">
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="/assets/css/tailwind.css" />
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Acopify - Editar Centro</title>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="canonical" href="https://www.acopify.com/editar" />
+<meta name="description" content="Edita la información de tu centro de acopio: nombre, ubicación, contacto y horarios." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Acopify" />
+<meta property="og:title" content="Acopify - Editar Centro" />
+<meta property="og:description" content="Edita la información de tu centro de acopio: nombre, ubicación, contacto y horarios." />
+<meta property="og:url" content="https://www.acopify.com/editar" />
+<meta property="og:image" content="https://www.acopify.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:alt" content="Acopify - mapa de centros de acopio en Venezuela" />
+<link rel="stylesheet" href="/assets/css/tailwind.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  body {
+    min-height: max(884px, 100dvh);
+  }
+  .pin-shadow {
+    filter: drop-shadow(0 8px 4px rgba(0,0,0,0.3));
+  }
+  /* Hide Leaflet attribution + restyle controls for a cleaner box */
+  .leaflet-control-attribution { display: none; }
+  .leaflet-control-zoom { border: none !important; box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }
+  .leaflet-control-zoom a {
+    background-color: #f8f9ff !important;
+    color: #0d1c2e !important;
+    border: 1px solid #c3c6d7 !important;
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    font-size: 18px !important;
+  }
+  .leaflet-control-zoom a:hover { background-color: #e6eeff !important; }
+  .leaflet-pane { z-index: 0 !important; }
+  .leaflet-map-pane { z-index: 0 !important; }
+</style>
 </head>
-<body class="min-h-screen flex flex-col bg-background text-on-surface font-body-md">
+<body class="bg-background font-body-md text-on-surface overflow-x-hidden">
 
-  <nav class="nav">
-    <div class="nav-inner">
-      <a href="/" class="nav-logo">
-        <span class="material-symbols-outlined nav-logo-icon" data-icon="emergency">emergency</span>
-        Acopify
-      </a>
-      <div class="nav-actions" id="nav-actions">
-        <a href="/login.html" class="nav-link" id="nav-login">Iniciar sesion</a>
-      </div>
-    </div>
-  </nav>
-
-  <div class="page-content">
-    <div class="container-md" id="editar-content">
-      <div class="loading"><div class="spinner"></div> Cargando...</div>
-    </div>
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 bg-surface shadow-sm border-b border-outline-variant flex justify-between items-center px-md h-16">
+  <div class="flex items-center gap-sm">
+    <span class="material-symbols-outlined text-primary" data-icon="emergency">emergency</span>
+    <h1 class="text-headline-lg-mobile font-headline-lg-mobile font-bold text-primary">Acopify</h1>
   </div>
+  <button class="text-label-md font-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors px-4 py-2 rounded-full" id="btn-cancelar">
+    Cancelar
+  </button>
+</header>
 
-  <footer class="footer">
-    <p>&copy; 2026 Acopify &mdash; Codigo abierto (MIT)</p>
-  </footer>
+<!-- Main Content -->
+<main class="relative w-full pt-20 pb-24 bg-surface min-h-screen px-md md:px-xl">
+  <div class="max-w-xl mx-auto">
+    
+    <!-- Page Title -->
+    <div class="mb-lg">
+      <h1 class="text-headline-lg font-headline-lg font-bold text-on-surface">Editar centro de acopio</h1>
+      <p class="text-body-md text-on-surface-variant">Actualiza la información y la ubicación exacta de tu centro.</p>
+    </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
-  <script src="/assets/js/firebase-init.js"></script>
-  <script src="/assets/js/firebase-data-manager.js"></script>
-  <script src="/assets/js/auth.js"></script>
-  <script src="/assets/js/editar.js"></script>
+    <!-- Loading (modo edición: oculta el formulario hasta precargar los datos) -->
+    <div id="edit-loading" class="hidden flex flex-col items-center justify-center gap-md py-xl mt-xl">
+      <img src="/favicon.svg" alt="Cargando" class="w-12 h-12 animate-spin" />
+      <p class="text-body-md text-on-surface-variant">Cargando la información del centro...</p>
+    </div>
+
+    <!-- Form -->
+    <form id="form-crear-centro" class="hidden space-y-lg">
+
+      <!-- Ubicación en el mapa (caja cuadrada con pin central fijo) -->
+      <div class="space-y-sm">
+        <h2 class="text-headline-md font-headline-md font-semibold text-on-surface">Ubicación en el mapa</h2>
+
+        <!-- Square rounded map box -->
+        <div class="relative h-72 w-full rounded-2xl overflow-hidden border border-outline-variant shadow-md bg-surface-container z-0">
+          <div id="map" class="absolute inset-0 w-full h-full z-0"></div>
+
+          <!-- Map loading overlay -->
+          <div id="map-loading" class="absolute inset-0 z-[40] bg-surface flex items-center justify-center">
+            <div class="text-center">
+              <img src="/favicon.svg" alt="Cargando" class="inline-block w-10 h-10 animate-spin mb-2" />
+              <p class="text-body-md text-on-surface-variant text-sm">Cargando mapa...</p>
+            </div>
+          </div>
+
+          <!-- Fixed central pin (move the map under it) -->
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-[40]">
+            <div class="relative flex flex-col items-center -translate-y-3">
+              <span class="material-symbols-outlined text-5xl text-error pin-shadow" data-icon="location_on" style="font-variation-settings: 'FILL' 1;">location_on</span>
+              <div class="w-2 h-2 bg-on-background rounded-full opacity-50 -mt-2"></div>
+            </div>
+          </div>
+
+          <!-- "Estoy aquí" / current-location button -->
+          <button type="button" id="btn-my-location"
+            class="absolute right-3 bottom-3 z-[45] bg-surface text-on-surface px-3 py-2 rounded-full shadow-lg border border-outline-variant hover:bg-surface-container-high transition-all active:scale-95 flex items-center gap-xs text-label-md font-label-md"
+            title="Usar mi ubicación actual">
+            <span class="material-symbols-outlined text-base" data-icon="my_location">my_location</span>
+            Estoy aquí
+          </button>
+        </div>
+
+        <!-- Instruction note -->
+        <p class="text-body-md text-on-surface-variant text-sm flex items-start gap-xs">
+          <span class="material-symbols-outlined text-base text-primary shrink-0" data-icon="info">info</span>
+          <span>Si estás en el lugar, toca <strong>“Estoy aquí”</strong>. Si no, mueve el mapa para colocar el pin en la ubicación exacta del centro.</span>
+        </p>
+
+        <!-- Selected coordinates + detected barrio -->
+        <div class="flex flex-col gap-1 border-l-4 border-primary pl-4">
+          <div class="flex items-center gap-xs flex-wrap">
+            <span class="text-label-md font-label-md text-outline uppercase tracking-widest text-xs">Coordenadas:</span>
+            <span class="font-mono text-label-md font-bold text-primary text-sm" id="coord-display">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Basic Info -->
+      <div class="space-y-md">
+        <h2 class="text-headline-md font-headline-md font-semibold text-on-surface">Información del Centro</h2>
+        
+        <div class="space-y-sm">
+          <label class="text-label-md font-label-md text-on-surface block">Nombre del centro <span class="required-asterisk">*</span></label>
+          <input type="text" id="nombre" required 
+            class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all"
+            placeholder="Ej: Centro de Acopio San Martin">
+        </div>
+
+        <div class="space-y-sm">
+          <label class="text-label-md font-label-md text-on-surface block">Descripción</label>
+          <textarea id="descripcion" rows="3"
+            class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all resize-none"
+            placeholder="Describe brevemente el centro y su propósito..."></textarea>
+        </div>
+      </div>
+
+      <!-- Address -->
+      <div class="space-y-md">
+        <h2 class="text-headline-md font-headline-md font-semibold text-on-surface">Dirección</h2>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-sm">
+          <div class="space-y-sm min-w-0">
+            <label class="text-label-md font-label-md text-on-surface block">País <span class="required-asterisk">*</span></label>
+            <select id="pais" required
+              class="w-full px-4 py-3 pr-10 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all truncate">
+              <option value="">Cargando países...</option>
+            </select>
+          </div>
+          <div class="space-y-sm min-w-0">
+            <label class="text-label-md font-label-md text-on-surface block">Estado / Provincia <span class="required-asterisk">*</span></label>
+            <select id="estado" required disabled
+              class="w-full px-4 py-3 pr-10 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all truncate disabled:opacity-60">
+              <option value="">Selecciona un país primero</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Municipio (solo Venezuela) -->
+        <div class="space-y-sm hidden" id="municipio-wrapper">
+          <label class="text-label-md font-label-md text-on-surface block">Municipio</label>
+          <div class="relative">
+            <input type="text" id="municipio" autocomplete="off" disabled
+              class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all disabled:opacity-60"
+              placeholder="Selecciona un estado primero">
+            <ul id="municipio-dropdown"
+              class="hidden absolute z-30 left-0 right-0 mt-1 bg-surface border border-outline-variant rounded-xl shadow-lg max-h-56 overflow-y-auto"
+              role="listbox"></ul>
+          </div>
+          <p class="text-on-surface-variant text-xs">Opcional — filtra las ciudades del estado seleccionado.</p>
+        </div>
+
+        <div class="space-y-sm">
+          <label class="text-label-md font-label-md text-on-surface block">Ciudad <span class="required-asterisk">*</span></label>
+          <div class="relative" id="ciudad-wrapper">
+            <input type="text" id="ciudad" autocomplete="off" disabled
+              class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all disabled:opacity-60"
+              placeholder="Selecciona un estado primero">
+            <ul id="ciudad-dropdown"
+              class="hidden absolute z-30 left-0 right-0 mt-1 bg-surface border border-outline-variant rounded-xl shadow-lg max-h-56 overflow-y-auto"
+              role="listbox"></ul>
+          </div>
+          <p id="ciudad-hint" class="hidden text-on-surface-variant text-xs"></p>
+        </div>
+
+        <div class="space-y-sm">
+          <label class="text-label-md font-label-md text-on-surface block">Calle / Avenida <span class="required-asterisk">*</span></label>
+          <input type="text" id="calle" required 
+            class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all"
+            placeholder="Ej: Av. Libertador 1234">
+        </div>
+
+        <div class="space-y-sm">
+          <label class="text-label-md font-label-md text-on-surface block">Piso / Apartamento</label>
+          <input type="text" id="piso" 
+            class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all"
+            placeholder="Ej: Piso 2, Apto 4B">
+        </div>
+      </div>
+
+      <!-- Contact -->
+      <div class="space-y-md">
+        <h2 class="text-headline-md font-headline-md font-semibold text-on-surface">Contacto</h2>
+        <p class="text-body-md text-on-surface-variant text-sm">Agrega uno o más números para que las personas sepan a dónde comunicarse. Todos los campos son opcionales.</p>
+
+        <!-- Teléfonos (solo llamadas) -->
+        <div class="space-y-sm">
+          <label class="text-label-md font-label-md text-on-surface block">Teléfono (llamadas)</label>
+          <div id="telefonos-list" class="space-y-sm"></div>
+          <button type="button" id="btn-add-telefono"
+            class="inline-flex items-center gap-xs text-label-md font-label-md text-primary hover:bg-surface-container-low rounded-full px-3 py-2 transition-colors active:scale-95">
+            <span class="material-symbols-outlined text-base" data-icon="add">add</span>
+            Agregar teléfono
+          </button>
+        </div>
+
+        <!-- WhatsApp -->
+        <div class="space-y-sm">
+          <label class="text-label-md font-label-md text-on-surface block">WhatsApp</label>
+          <div id="whatsapps-list" class="space-y-sm"></div>
+          <button type="button" id="btn-add-whatsapp"
+            class="inline-flex items-center gap-xs text-label-md font-label-md text-primary hover:bg-surface-container-low rounded-full px-3 py-2 transition-colors active:scale-95">
+            <span class="material-symbols-outlined text-base" data-icon="add">add</span>
+            Agregar WhatsApp
+          </button>
+        </div>
+      </div>
+
+      <!-- Días y Horarios -->
+      <div class="space-y-md">
+        <h2 class="text-headline-md font-headline-md font-semibold text-on-surface">Días y Horarios Abiertos</h2>
+        <p class="text-body-md text-on-surface-variant text-sm">Marca los días en que el centro está abierto e indica el horario de atención.</p>
+
+        <div id="horarios-list" class="space-y-sm"></div>
+      </div>
+
+      <!-- Gestión de recursos -->
+      <div class="space-y-md">
+        <div class="flex items-start gap-sm p-4 bg-surface-container-low rounded-xl border border-outline-variant">
+          <span class="material-symbols-outlined text-primary" data-icon="info">info</span>
+          <p class="text-body-md text-on-surface-variant text-sm">
+            Los recursos que necesita el centro se gestionan desde la
+            <strong>Lista de recursos</strong> en “Mi Centro”, para mantener la
+            información consistente.
+          </p>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div id="form-error" class="hidden bg-error-container text-on-error-container p-4 rounded-xl border border-error">
+        <div class="flex items-start gap-sm">
+          <span class="material-symbols-outlined text-error" data-icon="error">error</span>
+          <p id="error-text"></p>
+        </div>
+      </div>
+
+    </form>
+
+    <!-- Submit action (scrolls with the page) -->
+    <div class="mt-lg pt-lg border-t border-outline-variant">
+      <button id="btn-continuar" class="w-full bg-primary-container text-on-primary-container py-4 rounded-full font-bold text-headline-md shadow-lg hover:brightness-110 transition-all active:scale-[0.98] duration-150 flex justify-center items-center gap-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+      GUARDAR CAMBIOS
+      <span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+    </button>
+    </div>
+
+    <!-- Colaboradores (solo en modo edición; el JS la muestra y rellena) -->
+    <section id="colaboradores-section" class="hidden mt-xl pt-lg border-t border-outline-variant space-y-md scroll-mt-20">
+      <a id="colaboradores" class="block -mt-20 pt-20" aria-hidden="true"></a>
+      <div class="space-y-sm">
+        <h2 class="text-headline-md font-headline-md font-semibold text-on-surface flex items-center gap-sm">
+          <span class="material-symbols-outlined text-primary" data-icon="group">group</span>
+          Colaboradores
+        </h2>
+        <p class="text-body-md text-on-surface-variant text-sm">
+          Invita a otras personas para que ayuden a administrar este centro. Pueden editar
+          la información y la lista de recursos. Solo tú (el organizador) puedes invitar,
+          quitar colaboradores o transferir la administración.
+        </p>
+      </div>
+      <div id="colaboradores-content" class="space-y-lg"></div>
+    </section>
+  </div>
+</main>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
+
+<!-- App Scripts -->
+<script src="/assets/js/firebase-init.js"></script>
+<script src="/assets/js/firebase-data-manager.js"></script>
+<script src="/country-state-city-metadata/countries-states.js"></script>
+<script src="/assets/js/paises-estados.js"></script>
+<script src="/assets/js/reverse-geocode.js"></script>
+<script src="/assets/js/crear-centro-p1.js"></script>
+<script src="/assets/js/bottom-nav.js"></script>
 </body>
 </html>

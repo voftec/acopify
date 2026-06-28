@@ -25,7 +25,7 @@
   var registering = false;
 
   function getRedirectTarget() {
-    return sessionStorage.getItem("postLoginRedirect") || "/mis-centros.html";
+    return sessionStorage.getItem("postLoginRedirect") || "/mi-centro.html";
   }
 
   function goToTarget() {
@@ -46,6 +46,21 @@
       }
     }
   });
+
+  // Complete a redirect-based Google sign-up if we fell back to one earlier.
+  auth.getRedirectResult()
+    .then(function (result) {
+      if (result && result.user) {
+        if (typeof logAnalyticsEvent === 'function') {
+          logAnalyticsEvent("sign_up", { method: "google" });
+          logAnalyticsEvent("login", { method: "google" });
+        }
+        goToTarget();
+      }
+    })
+    .catch(function (error) {
+      showError(translateError(error.code));
+    });
 
   form.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -91,7 +106,7 @@
         sessionStorage.setItem(
           "authInfo",
           "Te enviamos un correo de confirmacion a " + email +
-          ". Verifica tu cuenta y luego inicia sesion."
+          ". Verifica tu cuenta y luego inicia sesion. Si no lo ves, revisa tu carpeta de spam o correo no deseado."
         );
         window.location.href = "/login.html";
       })
@@ -104,19 +119,21 @@
 
   btnGoogle.addEventListener("click", function () {
     hideMessages();
-    var provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider)
-      .then(function () {
+    // Uses a popup on desktop and a full-page redirect on mobile (where popups
+    // are unreliable). The redirect path resolves via getRedirectResult above.
+    window.acopifyGoogleSignIn(
+      function () {
         if (typeof logAnalyticsEvent === 'function') {
           logAnalyticsEvent("sign_up", { method: "google" });
           logAnalyticsEvent("login", { method: "google" });
         }
         // Google accounts are already verified.
         goToTarget();
-      })
-      .catch(function (error) {
-        showError(translateError(error.code));
-      });
+      },
+      function (code) {
+        showError(translateError(code));
+      }
+    );
   });
 
   function showError(msg) {
@@ -137,7 +154,9 @@
       "auth/weak-password": "La contrasena debe tener al menos 6 caracteres.",
       "auth/too-many-requests": "Demasiados intentos. Intenta de nuevo mas tarde.",
       "auth/popup-closed-by-user": "Se cerro la ventana de registro.",
-      "auth/operation-not-allowed": "El registro con correo no esta habilitado."
+      "auth/operation-not-allowed": "El registro con correo no esta habilitado.",
+      "auth/unauthorized-domain": "Este dominio no esta autorizado para registrarse con Google.",
+      "auth/account-exists-with-different-credential": "Ya existe una cuenta con este correo usando otro metodo de inicio de sesion."
     };
     return errors[code] || "Error al crear la cuenta. Intenta de nuevo.";
   }

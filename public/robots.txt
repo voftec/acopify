@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /$
+Allow: /onboarding
+Allow: /login
+Allow: /registro
+Allow: /recuperar
+
+# Auth-gated / dynamic app pages (no SEO value)
+Disallow: /mapa
+Disallow: /ajustes
+Disallow: /mi-centro
+Disallow: /editar
+Disallow: /agregar-insumo
+Disallow: /crear-centro-p1
+Disallow: /centro
+Disallow: /lista-recursos
+
+Sitemap: https://www.acopify.com/sitemap.xml
